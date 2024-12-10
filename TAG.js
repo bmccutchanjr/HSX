@@ -12,6 +12,8 @@ window.addEventListener ("load", event =>
 		t.addEventListener ("blur", event => { handleTickerBlur (event); } );
 		t.addEventListener ("focus", event => { handleTickerFocus (event); } );
 		t.focus();
+
+		document.getElementById ("fetch-button").addEventListener ("click", event => { fetchMovieStock (event) } );
 	} )
 
 function handleTickerBlur (event)
@@ -31,8 +33,10 @@ function handleTickerFocus (event)
 
 function fetchMovieStock (event)
 {	event.preventDefault();
-	const t = event.target.value;
-	if (t == "")
+//		const ticker = event.target.value;
+	const parent = event.target.parentElement;
+	const ticker = parent.querySelector ("input").value
+	if (ticker == "")
 	{
 		//	This is an error condition.  Nothing can be done without a valid ticker symbol.
 
@@ -41,5 +45,34 @@ function fetchMovieStock (event)
 		return;
 	}
 
-	
+	const section = document.getElementById ("moviestock-section");
+	displayMovieStockSection(section);
+	appendNewMovieStockDiv(section, ticker);
+
+}
+
+function appendNewMovieStockDiv (s, t)
+{
+	const div = document.createElement ("div");
+	div.classList.add ("moviestock");
+	div.setAttribute ("id", t);
+
+	const input = document.createElement ("input");
+	input.title = "The total gross domestic box office when " + t + " is delisted";
+	div.append (input);
+
+	const ticker = document.createElement ("div");
+	ticker.innerText = t;
+	div.append (ticker);
+
+	const title = document.createElement ("div");
+	title.setAttribute ("id", "title");
+	div.append (title);
+
+	s.append (div);
+}
+
+function displayMovieStockSection (s)
+{
+	s.classList.remove ("hidden");
 }

@@ -33,7 +33,6 @@ function handleTickerFocus (event)
 
 function fetchMovieStock (event)
 {	event.preventDefault();
-//		const ticker = event.target.value;
 	const parent = event.target.parentElement;
 	const ticker = parent.querySelector ("input").value
 	if (ticker == "")
@@ -45,10 +44,23 @@ function fetchMovieStock (event)
 		return;
 	}
 
-	const section = document.getElementById ("moviestock-section");
+	const section = getSection ("moviestock-section");
 	displayMovieStockSection(section);
 	appendNewMovieStockDiv(section, ticker);
 
+}
+
+function getSection (id)
+{
+	let section = document.getElementById ("moviestock-section");
+	if (section == undefined)
+	{
+		section = document.createElement ("section");
+		section.setAttribute ("id", id);
+		document.getElementsByTagName ("main")[0].append (section);
+	}
+
+	return section;
 }
 
 function appendNewMovieStockDiv (s, t)

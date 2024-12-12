@@ -1,0 +1,25 @@
+div.moviestock
+{
+	--padding: 5px;
+	border: 1px solid black;
+	display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+	margin-bottom: 5px;
+	padding: 5px;
+}
+
+div.moviestock > *
+{
+	display: inline-block;
+	flex-grow: 0;
+	flex-shrink: 0;
+	margin-right: 5px;
+}
+
+
+div.moviestock > *:last-child
+{
+	margin-right: 0px;
+}
+

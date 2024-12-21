@@ -48,6 +48,10 @@ function fetchMovieStock (event)
 	displayMovieStockSection(section);
 	appendNewMovieStockDiv(section, ticker);
 
+	const movie = new MovieStock;
+	movie.fetch (ticker)
+	.then (page => { section.innerText = page} )
+	.catch (error => { alert (error) } )
 }
 
 function getSection (id)

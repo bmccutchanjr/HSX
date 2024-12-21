@@ -27,6 +27,11 @@ class Fetch
 //	with each instance.  This is not true of public methods.  Public methods are shared across all instances of the
 //	class, but with their own scope and address space -- in other words reentrant, just like every other function
 //	in JavaScript.  So why are private methods different?
+//
+//	The answer is:  JavaScript does not have classes.  In the words of mozilla.org, "classes are syntax sugar over
+//	constructor functions".  Apparently any function can be 'instantiated' simply by calling 'new'.  This invokes the
+//	inherent constructor and allows the function to access its prototype.  And that's all a JavaScript class is, new
+//	syntax for something JavaScript could already do -- not new functionality.
 
 		return new Promise ((resolve, reject) =>
 		{

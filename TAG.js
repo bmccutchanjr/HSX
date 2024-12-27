@@ -44,27 +44,21 @@ function fetchMovieStock (event)
 		return;
 	}
 
-	const section = getSection ("moviestock-section");
-	displayMovieStockSection(section);
+//		const section = getSection ("moviestock-section");
+//		displayMovieStockSection(section);
+	const section = getMovieStockSection();
 	appendNewMovieStockDiv(section, ticker);
 
 	const movie = new MovieStock;
 	movie.fetch (ticker)
-	.then (page => { section.innerText = page} )
+//		.then (page => { section.innerText = JSON.stringify (page) } )
+	.then (page => { getStarBondSection().innerText = JSON.stringify (page) } )
 	.catch (error => { alert (error) } )
 }
 
-function getSection (id)
+function getMovieStockSection ()
 {
-	let section = document.getElementById ("moviestock-section");
-	if (section == undefined)
-	{
-		section = document.createElement ("section");
-		section.setAttribute ("id", id);
-		document.getElementsByTagName ("main")[0].append (section);
-	}
-
-	return section;
+	return getSection ("moviestock-section");
 }
 
 function appendNewMovieStockDiv (s, t)
@@ -88,7 +82,35 @@ function appendNewMovieStockDiv (s, t)
 	s.append (div);
 }
 
-function displayMovieStockSection (s)
+//	function displayMovieStockSection (s)
+//	{
+//		s.classList.remove ("hidden");
+//	}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	Fetch a StarBond
+//
+
+function getStarBondSection ()
 {
-	s.classList.remove ("hidden");
+	return getSection ("starbond-section");
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	miscellaneous
+//
+
+function getSection (id)
+{
+	let section = document.getElementById (id);
+	if (section == undefined)
+	{
+		section = document.createElement ("section");
+		section.setAttribute ("id", id);
+		document.getElementsByTagName ("main")[0].append (section);
+	}
+
+	return section;
 }

@@ -36,8 +36,20 @@ class Fetch
 		return new Promise ((resolve, reject) =>
 		{
 			fetch ("https://www.hsx.com/" + what)
-			.then (response => { resolve (response) } )
+			.then (response => { return response.text() } )
+			.then (data => { resolve (data) } )
 			.catch (error => { reject (error) } )
 		} )
+	}
+
+	substring (source, target)
+	{
+		//	Search the provided source string for the target.  Remove any and all text from the source string that preseded
+		//	the target (including the target) and retrun that value.  If the target substring is not found, return false.
+
+		const index = source.indexOf (target);
+		if (index < 0) return false;
+		else
+			return (source.substring (index + target.length))
 	}
 }

@@ -47,7 +47,7 @@ class MovieStock extends Fetch
 //		else
 		page = this.extractDateReleased (page);
 
-//		page = this.extractReleasePattern (page);
+	page = this.extractReleasePattern (page);
 //		page = this.extractDomesticGross (page);
 //		page = this.extractTheaterCount (page);
 //	get attached StarBonds
@@ -148,6 +148,23 @@ class MovieStock extends Fetch
 	{
 		page = this.substring (page, "<td class=\"label\">Phase:</td><td>");
 		this._phase = page.substring (0, page.indexOf ("</td>"));
+		return this.substring (page, ("</td>"));
+	}
+
+	extractReleasePattern (page)
+	{
+		const target = "<td class=\"label\">Release&nbsp;Pattern:</td><td>";
+
+		if (page.indexOf (target) < 0)
+		{
+			//	Release pattern is irrelevant for dead delisted films, and the page may not include it.
+
+			this._releasePattern = undefined;
+			return page;
+		}
+
+		page = this.substring (page, target);
+		this._status = page.substring (0, page.indexOf ("</td>"));
 		return this.substring (page, ("</td>"));
 	}
 

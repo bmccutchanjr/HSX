@@ -25,39 +25,30 @@ class MovieStock extends Fetch
 					if (page.indexOf ("The security you requested does not currently exist on the Exchange") > -1)
 						reject (ticker + " is not currently listed on the exchange")
 					else
-{
-	//	This is where I scrape the data I want from the page.  When I'm done, simply resolve true or false, so the invoking
-	//	script can do its thing.
-	//
-	//	It should fo without daying, nut the data must be extracted in the order its coded in the page.
+					{
+						//	This is where I scrape the data I want from the page.  When I'm done, simply resolve true or false, so the invoking
+						//	script can do its thing.
+						//
+						//	It should fo without daying, nut the data must be extracted in the order its coded in the page.
 
-	page = this.extractTitle (page);
-	page = this.extractStatus (page);
-	page = this.extractDateIPO (page);
-	page = this.extractGenre (page);
-	page = this.extractMPAARating (page);
-	page = this.extractPhase(page);
-//		if (this._status == "Inactive")
-//		{
-//			//	If the film's status in "Inactive", the date of theatrical release will not be on this page.  Instead, look
-//			//	for the delisted date and set _dateReleased to unknown.
-//			page = this.extractDateDelisted (page);
-//			this._dateReleased = unknown;
-//		}
-//		else
-		page = this.extractDateReleased (page);
+						page = this.extractTitle (page);
+						page = this.extractStatus (page);
+						page = this.extractDateIPO (page);
+						page = this.extractGenre (page);
+						page = this.extractMPAARating (page);
+						page = this.extractPhase(page);
+						page = this.extractDateReleased (page);
+						page = this.extractReleasePattern (page);
+						page = this.extractDomesticGross (page);
+					//		page = this.extractTheaterCount (page);
+					//	get attached StarBonds
+					//	get current price
+					//	get shares held long
+					//	get shares held short
+					//	get shares traded today
 
-	page = this.extractReleasePattern (page);
-//		page = this.extractDomesticGross (page);
-//		page = this.extractTheaterCount (page);
-//	get attached StarBonds
-//	get current price
-//	get shares held long
-//	get shares held short
-//	get shares traded today
-
-	resolve (page);
-}
+						resolve (page);
+					}
 				} )
 			.catch (error => { reject (error) } )			
 		})
@@ -119,6 +110,30 @@ class MovieStock extends Fetch
 			this._error = "Error estracting release date: " + error;
 			return false;
 		}
+	}
+
+	extractDomesticGross (page)
+	{
+		const target = "<td class=\"label\">Gross:</td><td>$";
+		if (page.indexOf (target) < 0)
+		{
+			//	Not every film has a domestic gross, many have not even been in theaters yet.  When included,
+			//	domestic gross is always prefixed with a dollar sign
+
+			this._domesticGross = undefined;
+			return page;
+		}
+
+		page = this.substring (page, target);
+		this._domesticGross = page.substring (0, page.indexOf ("</td>"));
+		if (!isNumber (this._domesticGross))
+		{
+			this._error = "Domestic gross is not a number: " + this._domesticGross;
+			this._domesticGross = undefined;
+			return false;
+		}
+
+		return this.substring (page, ("</td>"));
 	}
 
 	extractGenre (page)

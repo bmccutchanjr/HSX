@@ -44,14 +44,11 @@ function fetchMovieStock (event)
 		return;
 	}
 
-//		const section = getSection ("moviestock-section");
-//		displayMovieStockSection(section);
 	const section = getMovieStockSection();
 	appendNewMovieStockDiv(section, ticker);
 
 	const movie = new MovieStock;
 	movie.fetch (ticker)
-//		.then (page => { section.innerText = JSON.stringify (page) } )
 	.then (page => { getStarBondSection().innerText = JSON.stringify (page) } )
 	.catch (error => { alert (error) } )
 }

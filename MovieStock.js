@@ -47,7 +47,7 @@ class MovieStock extends Fetch
 //		else
 		page = this.extractDateReleased (page);
 
-	page = this.extractReleasePattern (page);
+//		page = this.extractReleasePattern (page);
 //		page = this.extractDomesticGross (page);
 //		page = this.extractTheaterCount (page);
 //	get attached StarBonds
@@ -71,14 +71,22 @@ class MovieStock extends Fetch
 		//	The date of the Initial Public Offering (IPO) for this MovieStock.  A MovieStock must always have a valid
 		//	date of IPO.
 
-		page = this.substring (page, "<td class=\"label\">Delist Date:</td><td>");
+		page = this.substring (page, "<td class=\"label\">Delist&nbsp;Date:</td><td>");
 		this._dateDateDelisted = new Date (page.substring (0, page.indexOf ("</td>")));
-//			return this.substring (page, ("</td>"));
 		return page;
 	}
 
 	extractDateIPO (page)
 	{
+		if (this._status == "Inactive")
+		{
+			//	If the film's status in "Inactive", the date of theatrical release will not be on this page.  Instead, look
+			//	for the delisted date and set _dateReleased to unknown.
+
+			this._dateIPO = undefined;
+			return this.extractDateDelisted (page);
+		}
+
 		//	The date of the Initial Public Offering (IPO) for this MovieStock.  A MovieStock must always have a valid
 		//	date of IPO.
 
@@ -89,14 +97,14 @@ class MovieStock extends Fetch
 
 	extractDateReleased (page)
 	{
-		if (this._status == "Inactive")
-		{
-			//	If the film's status in "Inactive", the date of theatrical release will not be on this page.  Instead, look
-			//	for the delisted date and set _dateReleased to unknown.
-
-			this._dateReleased = unknown;
-			return extractDateDelisted (page);
-		}
+//			if (this._status == "Inactive")
+//			{
+//				//	If the film's status in "Inactive", the date of theatrical release will not be on this page.  Instead, look
+//				//	for the delisted date and set _dateReleased to unknown.
+//	
+//				this._dateReleased = unknown;
+//				return extractDateDelisted (page);
+//			}
 
 		//	The date the film represented by this MovieStock was released to theaters.  Unlike the date of the IPO, the
 		//	release date is not required.  (In real life, the film may still be in a pre-production phase.  It may not
@@ -106,7 +114,7 @@ class MovieStock extends Fetch
 		const temp = page.substring (0, page.indexOf ("</td>"));
 		if (temp == "n/a")
 		{
-			this._dateReleased = unknown;
+			this._dateReleased = undefined;
 			return this.substring (page, ("</td>"));
 		}
 

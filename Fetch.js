@@ -13,7 +13,6 @@ class Fetch
 		this.#_page = undefined;
 	}
 
-//		#fetchPage (what)
 	fetchPage (what)
 	{
 		//	Fetch the specified page from HSX.COM.  Because this is an asynchronous operation the method returns a

@@ -40,7 +40,7 @@ class MovieStock extends Fetch
 						page = this.extractDateReleased (page);
 						page = this.extractReleasePattern (page);
 						page = this.extractDomesticGross (page);
-					//		page = this.extractTheaterCount (page);
+						page = this.extractTheaterCount (page);
 					//	get attached StarBonds
 					//	get current price
 					//	get shares held long
@@ -102,7 +102,7 @@ class MovieStock extends Fetch
 
 		try
 		{
-			this._dateReleased = new Date (page.substring (0, page.indexOf ("</td>")));
+			this._dateReleased = new Date (temp);
 			return this.substring (page, ("</td>"));
 		}
 		catch (error)
@@ -114,26 +114,30 @@ class MovieStock extends Fetch
 
 	extractDomesticGross (page)
 	{
-		const target = "<td class=\"label\">Gross:</td><td>$";
-		if (page.indexOf (target) < 0)
+		page = this.substring (page, "<td class=\"label\">Gross:</td><td>");
+		let temp = page.substring (0, page.indexOf ("</td>"));
+		if ((temp == "") || (temp == "n/a"))
 		{
 			//	Not every film has a domestic gross, many have not even been in theaters yet.  When included,
 			//	domestic gross is always prefixed with a dollar sign
-
+	
 			this._domesticGross = undefined;
-			return page;
 		}
+		else
+			if (temp[0] == "$")
+			{
+				temp = temp.substring (1);
+				temp = temp.replaceAll (",", "");
+				this._domesticGross = temp * 1;
+alert (this._domesticGross);
+			}
+			else
+			{
+				this._domesticGross = temp * 1;
+				throw "Invalid input (domestic gross): " + temp;
+			}
 
-		page = this.substring (page, target);
-		this._domesticGross = page.substring (0, page.indexOf ("</td>"));
-		if (!isNumber (this._domesticGross))
-		{
-			this._error = "Domestic gross is not a number: " + this._domesticGross;
-			this._domesticGross = undefined;
-			return false;
-		}
-
-		return this.substring (page, ("</td>"));
+		return page;
 	}
 
 	extractGenre (page)
@@ -179,6 +183,33 @@ class MovieStock extends Fetch
 		page = this.substring (page, "<td class=\"label\">Status:</td><td>");
 		this._status = page.substring (0, page.indexOf ("</td>"));
 		return this.substring (page, ("</td>"));
+	}
+
+	extractTheaterCount (page)
+	{
+		page = this.substring (page, "<td class=\"label\">Theaters:</td><td>");
+		let temp = page.substring (0, page.indexOf ("</td>"));
+		if ((temp == "") || (temp == "n/a"))
+		{
+			//	Not every film has a theater count, many have not even been in theaters and some never will be,
+	
+			this.theaterCount = undefined;
+		}
+		else
+			try
+			{
+				temp = temp.substring (1);
+				temp = temp.replaceAll (",", "");
+				this.theaterCount = temp * 1;
+alert (this.theaterCount);
+			}
+			catch (error)
+			{
+				this._theaterCount = temp * 1;
+				throw "Invalid input (theater count): " + temp;
+			}
+
+		return page;
 	}
 
 	extractTitle (page)

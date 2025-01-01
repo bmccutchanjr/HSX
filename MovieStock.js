@@ -62,9 +62,21 @@ class MovieStock extends Fetch
 		//	The date of the Initial Public Offering (IPO) for this MovieStock.  A MovieStock must always have a valid
 		//	date of IPO.
 
-		page = this.substring (page, "<td class=\"label\">Delist&nbsp;Date:</td><td>");
-		this._dateDateDelisted = new Date (page.substring (0, page.indexOf ("</td>")));
-		return page;
+		try
+		{
+				page = this.substring (page, "<td class=\"label\">Delist&nbsp;Date:</td><td>");
+				this._dateDateDelisted = new Date (page.substring (0, page.indexOf ("</td>")));
+alert (this._dateDateDelisted);
+				return page;
+		}
+		catch (error)
+		{
+			//	I think the page should always have a date of IPO or date the MovieStock was delisted at this point in the
+			//	page source.  I'm not at all sure that either is actually relevant to anything I want to do, so untimately,
+			//	this may not be a fatal error condition.  I may be able to ignore it.  But for now...
+
+			throw error + ": delist date";
+		}
 	}
 
 	extractDateIPO (page)
@@ -72,18 +84,27 @@ class MovieStock extends Fetch
 		//	The date of the Initial Public Offering (IPO) for this MovieStock.  A MovieStock's page should always have a
 		//	valid date of IPO or a valid date of delist.
 
-		if (this._status == "Inactive")
+		try
 		{
-			//	If the film's status in "Inactive", the date of theatrical release will not be on this page.  Instead, look
-			//	for the delisted date and set _dateReleased to undefined.
-
-			this._dateIPO = undefined;
-			return this.extractDateDelisted (page);
+			page = this.substring (page, "<td class=\"label\">IPO&nbsp;Date:</td><td>");
+			this._dateIPO = new Date (page.substring (0, page.indexOf ("</td>")));
+alert (this._dateIPO);
 		}
+		catch (error)
+		{
+			if ((error == "Target string not found within source page") && (this._status == "Inactive"))
+			{
+				//	I'm not sure, but it seems that the date of IPO or date of delist should appear at this point in
+				//	the source page.  So, if the date of IPO was not found AND the film's status in "Inactive", look
+				//	for the date that the film was delisted instead.
 
-		page = this.substring (page, "<td class=\"label\">IPO&nbsp;Date:</td><td>");
-		this._dateIPO = new Date (page.substring (0, page.indexOf ("</td>")));
-		return this.substring (page, ("</td>"));
+				this._dateIPO = undefined;
+				page = this.extractDateDelisted (page);
+			}
+			else
+				throw error + ": date of IPO";
+		}
+		return page;
 	}
 
 	extractDateReleased (page)
@@ -92,97 +113,158 @@ class MovieStock extends Fetch
 		//	release date is not required.  (In real life, the film may still be in a pre-production phase.  It may not
 		//	even be certain that the film will actually be made, let alone released to theaters.)
 		
-		page = this.substring (page, "<td class=\"label\">Release&nbsp;Date:</td><td>");
-		const temp = page.substring (0, page.indexOf ("</td>"));
-		if (temp == "n/a")
-		{
-			this._dateReleased = undefined;
-			return this.substring (page, ("</td>"));
-		}
-
 		try
 		{
-			this._dateReleased = new Date (temp);
-			return this.substring (page, ("</td>"));
+			page = this.substring (page, "<td class=\"label\">Release&nbsp;Date:</td><td>");
+			const temp = page.substring (0, page.indexOf ("</td>"));
+			if (temp == "n/a")
+				this._dateReleased = undefined;
+			else
+				this._dateReleased = new Date (temp);
+alert (this._dateReleased);
+			return page;
 		}
 		catch (error)
 		{
-			this._error = "Error estracting release date: " + error;
-			return false;
+			//	As far as I know, the release date is always included in the source page, even if a release date hasn't
+			//	been set for the film or the MovieStock is dead delisted.  It may have a value of "n/a" but the page
+			//	includes a spot for it.  So this indicates a condition that needs to be resolved.  It may well turn out
+			//	that this is an acceptable occurance and not an error after all.  For now...
+			throw error + ": release date";
 		}
 	}
 
 	extractDomesticGross (page)
 	{
-		page = this.substring (page, "<td class=\"label\">Gross:</td><td>");
-		let temp = page.substring (0, page.indexOf ("</td>"));
-		if ((temp == "") || (temp == "n/a"))
-		{
-			//	Not every film has a domestic gross, many have not even been in theaters yet.  When included,
-			//	domestic gross is always prefixed with a dollar sign
-	
-			this._domesticGross = undefined;
-		}
-		else
-			if (temp[0] == "$")
-			{
-				temp = temp.substring (1);
-				temp = temp.replaceAll (",", "");
-				this._domesticGross = temp * 1;
-alert (this._domesticGross);
-			}
-			else
-			{
-				this._domesticGross = temp * 1;
-				throw "Invalid input (domestic gross): " + temp;
-			}
+		//	Not every film has been released into theaters yet, so not all MovieStocks's have a domestic gross.  And
+		//	yet, I don't need to determine if this MovieStock should or shoyld not have one.  This is critical data to
+		//	HSX's operation, and I can trust them to have the correct data here.
+		//
+		//	Attempting to convert non-numeric data will throw an error.  I simply need to catch that error.
 
-		return page;
+		this._domesticGross = undefined;		//	let domestic gross defaults to undefined
+
+		try
+		{
+			page = this.substring (page, "<td class=\"label\">Gross:</td><td>");
+			const temp = page.substring (0, page.indexOf ("</td>"));
+			if ((temp != "") && (temp != "n/a"))
+				this._domesticGross = this.convertToNumber (temp);
+alert (this._domesticGross);
+			return page;
+		}
+		catch (error)
+		{
+			throw "Invalid input (domestic gross): " + page.substring (0, page.indexOf ("</td>"));
+		}
 	}
 
 	extractGenre (page)
 	{
+		//	Genre is one of the pieces of data provided by HSX that I have little or no use for.  By nature,
+		//	the value of genre is pretty open-ended.  Trying to validate it may simply not be worth it.
+		
 		page = this.substring (page, "<td class=\"label\">Genre:</td><td>");
 		this._genre = page.substring (0, page.indexOf ("</td>"));
-		return this.substring (page, ("</td>"));
+//			return this.substring (page, ("</td>"));
 	}
 
 	extractMPAARating (page)
 	{
+		//	The MPAA rating is another of the pieces of data provided by HSX that I have little or no use for.  It's
+		//	actually well-defined, with only a few allowable values, but like genre, it simply isn'y worth trying to
+		//	validate it.
+		
 		page = this.substring (page, "<td class=\"label\">MPAA Rating:</td><td>");
-		this._MPAA = page.substring (0, page.indexOf ("</td>"));
-		return this.substring (page, ("</td>"));
+		this._MPAARating = page.substring (0, page.indexOf ("</td>"));
+//			return this.substring (page, ("</td>"));
 	}
 
 	extractPhase (page)
 	{
 		page = this.substring (page, "<td class=\"label\">Phase:</td><td>");
 		this._phase = page.substring (0, page.indexOf ("</td>"));
-		return this.substring (page, ("</td>"));
+		this.isValidPhase (this._phase);
+//			return this.substring (page, ("</td>"));
+	}
+
+	isValidPhase (string)
+	{
+		if ( [ "Concept", "Development", "Production", "Wrap", "Release" ].indexOf (string) < 0)
+//				return false;
+//			else
+//				return true;
+			throw "Invalid production phase: " + string;
 	}
 
 	extractReleasePattern (page)
 	{
-		const target = "<td class=\"label\">Release&nbsp;Pattern:</td><td>";
+		//	Release pattern is needed to calculate the future delist date for films that have not yet delisted.
+		//	The delist date is needed to properly calculate the Trailing Average Gross (TAG) of a StarBond, but is
+		//	irrelevant for dead delisted MovieStocks and films without a release date assigned.
 
-		if (page.indexOf (target) < 0)
+//			const target = "<td class=\"label\">Release&nbsp;Pattern:</td><td>";
+//	
+//			if (page.indexOf (target) < 0)
+//			{
+//				//	Release pattern is irrelevant for dead delisted films, and the page may not include it.
+//	
+//				this._releasePattern = undefined;
+//				return page;
+//			}
+//	
+//			page = this.substring (page, target);
+		try
 		{
-			//	Release pattern is irrelevant for dead delisted films, and the page may not include it.
-
-			this._releasePattern = undefined;
-			return page;
+			page = this.substring (page, "<td class=\"label\">Release&nbsp;Pattern:</td><td>");
+			this._releasePattern = page.substring (0, page.indexOf ("</td>"));
+			this.isValidReleasePattern (this._releasePattern)
+//	If a film has a release date and a release pattern, it also has a delist date.  And I may need the delist
+//	date to calculate the new TAG of a StarBond (a StarBond can be attached to more than one MovieStock that
+//	is being delisted on the same day).  If this MovieStock is active, has a release date and a release pattern but
+//	doesn't have a delist date -- calculate it,
+			if (this._dateDateDelisted == undecided)
+				this._dateDateDelisted = this.calculateDelistDate (this._dateReleased, this._releasePattern);
 		}
+		catch (error)
+		{
+//				//	A MovieStock is only inactive if it has been delisted.  If a MovieStock has been delisted,
+//				//	the release pattern is irrelevant.
+//				if (this._status != "Inactive")
+//					throw error;
+//	The release pattern is not presented in a straight-forward clear-cut fashion.  Ultimately, the release
+//	pattern can only be "limited", "moderate" (which HSX handles the same as limited) or "wide".  But, some
+//	films onotially have a limited release and expand to a wide release a few weeks later.  In that case,
+//	both release dates are presented here.  I need to identify one of these films so I can determine how best
+//	to handle this.  Until then, all non-standard values must be treated as errors.
+//
+//	It could be this is irrelevant.  Since I need to get a list if films to include in the TAG calculation from
+//	the StarBond page and the MovieStocks are listed with their release date in that list.  The release date
+//	from the StarBond is what I should be using.  So could I just ignore any errors here?
+//
+//	ANyway, two films that started out limited and expanded to wide are "A Real Pain" (ARLPN) and "A Better Man"
+//	(BETMN).
+throw error;
+		}
+//			return this.substring (page, ("</td>"));
+	}
 
-		page = this.substring (page, target);
-		this._status = page.substring (0, page.indexOf ("</td>"));
-		return this.substring (page, ("</td>"));
+	isValidReleasePattern (string)
+	{
+		if ( [ "Limited", "Modarate", "Wide" ].indexOf (string) < 0)
+			throw "Invalid release pattern: " + string;
+	}
+
+	calculateDelistDate (date, pattern)
+	{
+
 	}
 
 	extractStatus (page)
 	{
 		page = this.substring (page, "<td class=\"label\">Status:</td><td>");
 		this._status = page.substring (0, page.indexOf ("</td>"));
-		return this.substring (page, ("</td>"));
+//			return this.substring (page, ("</td>"));
 	}
 
 	extractTheaterCount (page)
@@ -191,21 +273,18 @@ alert (this._domesticGross);
 		let temp = page.substring (0, page.indexOf ("</td>"));
 		if ((temp == "") || (temp == "n/a"))
 		{
-			//	Not every film has a theater count, many have not even been in theaters and some never will be,
+			//	Not every film has a theater count, many have not even been in theaters and some never will be.
 	
 			this.theaterCount = undefined;
 		}
 		else
 			try
 			{
-				temp = temp.substring (1);
-				temp = temp.replaceAll (",", "");
-				this.theaterCount = temp * 1;
-alert (this.theaterCount);
+				this._theaterCount = this.convertToNumber (temp);
+alert (this._theaterCount);
 			}
 			catch (error)
 			{
-				this._theaterCount = temp * 1;
 				throw "Invalid input (theater count): " + temp;
 			}
 
@@ -218,13 +297,11 @@ alert (this.theaterCount);
 		const temp = page.substring (0, page.indexOf ("</title"));
 		if (temp.indexOf ("MovieStock") < 0)
 		{
-			this._error = "The selected security is not a MovieStock";
-			return false;
+			throw "The selected security (" + this._tickerSymbol + ") is not a MovieStock";
 		}
-		else
-		{
-			this._title = temp.substring (0, temp.indexOf (" - MovieStock"));
-			return this.substring (page, ("<!--                  Begin: Page Body                      -->"));
-		}
+
+		this._title = temp.substring (0, temp.indexOf (" - MovieStock"));
+alert (this._title);
+		return this.substring (page, ("<!--                  Begin: Page Body                      -->"));
 	}
 }

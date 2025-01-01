@@ -47,8 +47,30 @@ class Fetch
 		//	the target (including the target) and retrun that value.  If the target substring is not found, return false.
 
 		const index = source.indexOf (target);
-		if (index < 0) return false;
+		if (index < 0)
+			throw "Target string not found within source page";
 		else
-			return (source.substring (index + target.length))
+			return (source.substring (index + target.length));
+	}
+
+	convertToNumber (string)
+	{
+		//	HSX displays nummeric values with characters (dollar signs and commas) that cause JavaScript to be
+		//	unable to convert the string to a number.  At the very least, these characters need to be stripped
+		//	before converting to a number.
+
+		string = string.replaceAll ("$", "");
+		string = string.replaceAll (",", "");
+		return string * 1;
+	}
+
+	isValidStatus (string)
+	{
+		//	Is the provided string found in an array of acceptable values?  Return true or false... 
+
+		if (["Active", "Halted", "Inactive"].indexOf (string) < 0)
+			return false;
+		else
+			return true; 
 	}
 }

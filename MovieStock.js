@@ -11,6 +11,7 @@ class MovieStock extends Fetch
 
 		//	Everything defaults to undefined...
 
+this._attachedStarBonds = [];
 		this._dateDateDelisted = undefined;
 		this._dateIPO = undefined;
 		this._dateReleased = undefined;
@@ -23,11 +24,14 @@ class MovieStock extends Fetch
 		this._sharesTraded = undefined;
 		this._status = undefined;
 		this._theaterCount = undefined;
+		this._tickerSymbol = undefined;
 		this._title = undefined;
 	}
 
 	fetch (ticker)
 	{
+		this._tickerSymbol = ticker;
+
 		//	Fetch the page representing the film which is identified by the ticker symbol.  This method returns a
 		//	Promise
 
@@ -37,38 +41,39 @@ class MovieStock extends Fetch
 
 			this.fetchPage ("security/view/" + ticker)
 			.then (page =>
+			{
+				if (page.indexOf ("The security you requested does not currently exist on the Exchange") > -1)
+					reject (ticker + " is not currently listed on the exchange")
+				else
 				{
-					if (page.indexOf ("The security you requested does not currently exist on the Exchange") > -1)
-						reject (ticker + " is not currently listed on the exchange")
-					else
+					//	This is where I scrape the data I want from the page.  When I'm done, simply resolve true or false,
+					//	so the invoking script can do its thing.
+					//
+					//	It should go without saying, but the data must be extracted in the order it's coded in the page.
+
+					page = this.extractTitle (page);
+					page = this.extractStatus (page);
+					page = this.extractDateIPO (page);
+					page = this.extractGenre (page);
+					page = this.extractMPAARating (page);
+					page = this.extractPhase(page);
+					page = this.extractDateReleased (page);
+
+					if (this._dateReleased != undefined)
 					{
-						//	This is where I scrape the data I want from the page.  When I'm done, simply resolve true or false, so the invoking
-						//	script can do its thing.
-						//
-						//	It should fo without daying, nut the data must be extracted in the order its coded in the page.
+						//	Not every film has a release date and it seems the source page omits release pattern when
+						//	this is the case.  In any event, release pattern is only relevant if a film does have a
+						//	release date.  The same could go for domestic gross and theater count as well (except the
+						//	source page seems to always include those).  So if release date is undefined, skip release
+						//	pattern, domestic gross and theater count.
 
-						page = this.extractTitle (page);
-						page = this.extractStatus (page);
-						page = this.extractDateIPO (page);
-						page = this.extractGenre (page);
-						page = this.extractMPAARating (page);
-						page = this.extractPhase(page);
-						page = this.extractDateReleased (page);
+						page = this.extractReleasePattern (page);
+						page = this.extractDomesticGross (page);
+						page = this.extractTheaterCount (page);
+					}
 
-						if (this._dateReleased != undefined)
-						{
-							//	Not every film has a release date and it seems the source page omits release pattern when
-							//	this is the case.  In any event, release pattern is only relevant if a film does have a
-							//	release date.  The same could go for domestic gross and theater count as well (except the
-							//	source page seems to always include those).  So if release date is undefined, skip release
-							//	pattern, domestic gross and theater count.
+					page = this.extractAttachedStarBonds (page);
 
-							page = this.extractReleasePattern (page);
-							page = this.extractDomesticGross (page);
-							page = this.extractTheaterCount (page);
-						}
-
-					//	get attached StarBonds
 					//	get current price
 					//	get shares held long
 					//	get shares held short
@@ -76,7 +81,7 @@ class MovieStock extends Fetch
 
 						resolve (page);
 					}
-				} )
+			} )
 			.catch (error => { reject (error) } )			
 		})
 	}
@@ -85,6 +90,34 @@ class MovieStock extends Fetch
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	Functions to extract specific bits of data from the page.  These functions are in alphabetical order, to make
 	//	it easier to find them.
+
+	extractAttachedStarBonds (page)
+	{
+		page = this.substring (page, "<h4>Cast</h4>");
+		const limitText = "<!-- RELATED POSTS -->";
+		let credits = page.substring (0, page.indexOf (limitText));
+
+		while (credits.indexOf ("<p>") != -1)
+		{
+			credits = this.extractNextStarBond (credits);
+		}
+
+		return this.substring (page, limitText);
+	}
+	
+	extractNextStarBond (source)
+	{
+		//	Scrape one StarBond from the source
+
+		const obj = {};
+
+		source = this.substring (source, "<p>");
+		obj.name = source.substring (0, source.indexOf (" (<a href")).trim();
+		source = this.substring (source, "security/view/");
+		obj.ticker = source.substring (0, source.indexOf ("\">")).trim();
+		this._attachedStarBonds.push (obj);
+		return source;
+	}
 
 	extractDateDelisted (page)
 	{

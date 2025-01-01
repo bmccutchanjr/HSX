@@ -34,13 +34,28 @@ class MovieStock extends Fetch
 						page = this.extractTitle (page);
 						page = this.extractStatus (page);
 						page = this.extractDateIPO (page);
+alert ("genre");
 						page = this.extractGenre (page);
+alert (this._genre);
+alert ("rating");
 						page = this.extractMPAARating (page);
+alert (this._rating);
+alert ("production phase");
 						page = this.extractPhase(page);
+alert (this._phase);
+alert ("date release");
 						page = this.extractDateReleased (page);
+alert (this._dateReleased);
+alert ("release pattern");
+alert ("page: " + page.substring (0, 25));
 						page = this.extractReleasePattern (page);
+alert (this._releasePattern);
+alert ("gross");
 						page = this.extractDomesticGross (page);
+alert (this._domesticGross);
+alert ("theater count");
 						page = this.extractTheaterCount (page);
+alert (this._theaterCount);
 					//	get attached StarBonds
 					//	get current price
 					//	get shares held long
@@ -54,7 +69,7 @@ class MovieStock extends Fetch
 		})
 	}
 
-	//	Funcrions to extract specific bits of data from the page.  These functions are in alphabetical order, to make
+	//	Functions to extract specific bits of data from the page.  These functions are in alphabetical order, to make
 	//	it easier to find them.
 
 	extractDateDelisted (page)
@@ -66,7 +81,7 @@ class MovieStock extends Fetch
 		{
 				page = this.substring (page, "<td class=\"label\">Delist&nbsp;Date:</td><td>");
 				this._dateDateDelisted = new Date (page.substring (0, page.indexOf ("</td>")));
-alert (this._dateDateDelisted);
+
 				return page;
 		}
 		catch (error)
@@ -88,7 +103,6 @@ alert (this._dateDateDelisted);
 		{
 			page = this.substring (page, "<td class=\"label\">IPO&nbsp;Date:</td><td>");
 			this._dateIPO = new Date (page.substring (0, page.indexOf ("</td>")));
-alert (this._dateIPO);
 		}
 		catch (error)
 		{
@@ -104,6 +118,7 @@ alert (this._dateIPO);
 			else
 				throw error + ": date of IPO";
 		}
+
 		return page;
 	}
 
@@ -121,7 +136,7 @@ alert (this._dateIPO);
 				this._dateReleased = undefined;
 			else
 				this._dateReleased = new Date (temp);
-alert (this._dateReleased);
+
 			return page;
 		}
 		catch (error)
@@ -150,7 +165,7 @@ alert (this._dateReleased);
 			const temp = page.substring (0, page.indexOf ("</td>"));
 			if ((temp != "") && (temp != "n/a"))
 				this._domesticGross = this.convertToNumber (temp);
-alert (this._domesticGross);
+
 			return page;
 		}
 		catch (error)
@@ -166,7 +181,8 @@ alert (this._domesticGross);
 		
 		page = this.substring (page, "<td class=\"label\">Genre:</td><td>");
 		this._genre = page.substring (0, page.indexOf ("</td>"));
-//			return this.substring (page, ("</td>"));
+
+		return page;
 	}
 
 	extractMPAARating (page)
@@ -177,7 +193,8 @@ alert (this._domesticGross);
 		
 		page = this.substring (page, "<td class=\"label\">MPAA Rating:</td><td>");
 		this._MPAARating = page.substring (0, page.indexOf ("</td>"));
-//			return this.substring (page, ("</td>"));
+
+		return page;
 	}
 
 	extractPhase (page)
@@ -185,15 +202,13 @@ alert (this._domesticGross);
 		page = this.substring (page, "<td class=\"label\">Phase:</td><td>");
 		this._phase = page.substring (0, page.indexOf ("</td>"));
 		this.isValidPhase (this._phase);
-//			return this.substring (page, ("</td>"));
+
+		return page;
 	}
 
 	isValidPhase (string)
 	{
 		if ( [ "Concept", "Development", "Production", "Wrap", "Release" ].indexOf (string) < 0)
-//				return false;
-//			else
-//				return true;
 			throw "Invalid production phase: " + string;
 	}
 
@@ -203,17 +218,6 @@ alert (this._domesticGross);
 		//	The delist date is needed to properly calculate the Trailing Average Gross (TAG) of a StarBond, but is
 		//	irrelevant for dead delisted MovieStocks and films without a release date assigned.
 
-//			const target = "<td class=\"label\">Release&nbsp;Pattern:</td><td>";
-//	
-//			if (page.indexOf (target) < 0)
-//			{
-//				//	Release pattern is irrelevant for dead delisted films, and the page may not include it.
-//	
-//				this._releasePattern = undefined;
-//				return page;
-//			}
-//	
-//			page = this.substring (page, target);
 		try
 		{
 			page = this.substring (page, "<td class=\"label\">Release&nbsp;Pattern:</td><td>");
@@ -223,44 +227,44 @@ alert (this._domesticGross);
 //	date to calculate the new TAG of a StarBond (a StarBond can be attached to more than one MovieStock that
 //	is being delisted on the same day).  If this MovieStock is active, has a release date and a release pattern but
 //	doesn't have a delist date -- calculate it,
-			if (this._dateDateDelisted == undecided)
-				this._dateDateDelisted = this.calculateDelistDate (this._dateReleased, this._releasePattern);
+//				if (this._dateDateDelisted == undecided)
+//					this._dateDateDelisted = this.calculateDelistDate (this._dateReleased, this._releasePattern);
 		}
 		catch (error)
 		{
-//				//	A MovieStock is only inactive if it has been delisted.  If a MovieStock has been delisted,
-//				//	the release pattern is irrelevant.
-//				if (this._status != "Inactive")
-//					throw error;
-//	The release pattern is not presented in a straight-forward clear-cut fashion.  Ultimately, the release
-//	pattern can only be "limited", "moderate" (which HSX handles the same as limited) or "wide".  But, some
-//	films onotially have a limited release and expand to a wide release a few weeks later.  In that case,
-//	both release dates are presented here.  I need to identify one of these films so I can determine how best
-//	to handle this.  Until then, all non-standard values must be treated as errors.
-//
-//	It could be this is irrelevant.  Since I need to get a list if films to include in the TAG calculation from
-//	the StarBond page and the MovieStocks are listed with their release date in that list.  The release date
-//	from the StarBond is what I should be using.  So could I just ignore any errors here?
-//
-//	ANyway, two films that started out limited and expanded to wide are "A Real Pain" (ARLPN) and "A Better Man"
-//	(BETMN).
-//
-//	Even if I use the release date given on the StarBond page, I still need the release pattern.
-if (this._releasePattern.indexOf ("Wide") != -1)
-	this._releasePattern = "Wide";
-else
-	if (this._releasePattern.indexOf ("Limited") != -1)
-		this._releasePattern = "Limited";
-	else
-		throw error;
+			//	Release pattern may be omitted from the source page if the MovieStock has been dead delisted.  I'm fairly,
+			//	certain it is always included otherwise, even if the value is "n/a".  If release date is not in the source
+			//	and the status of the MovieStock is not "Inactive", it's needs to be investigated...
+
+			switch (error)
+			{
+				case "Target string not found within source page":
+					if (this._status != "Inactive")
+						throw error + ": release pattern";
+					break;
+
+				case "Invalid release pattern":
+					if (this._releasePattern.indexOf ("wide") != -1)
+						this._releasePattern = "Wide";
+					else
+						if (this._releasePattern.indexOf ("limited") != -1)
+							this._releasePattern = "Limited";
+						else
+							throw error;
+					break;
+
+				default:
+					throw error;
+			}
 		}
-//			return this.substring (page, ("</td>"));
+
+		return page;
 	}
 
 	isValidReleasePattern (string)
 	{
 		if ( [ "Limited", "Modarate", "Wide" ].indexOf (string) < 0)
-			throw "Invalid release pattern: " + string;
+			throw "Invalid release pattern";
 	}
 
 //		calculateDelistDate (date, pattern)
@@ -272,7 +276,8 @@ else
 	{
 		page = this.substring (page, "<td class=\"label\">Status:</td><td>");
 		this._status = page.substring (0, page.indexOf ("</td>"));
-//			return this.substring (page, ("</td>"));
+
+		return page;
 	}
 
 	extractTheaterCount (page)
@@ -289,7 +294,6 @@ else
 			try
 			{
 				this._theaterCount = this.convertToNumber (temp);
-alert (this._theaterCount);
 			}
 			catch (error)
 			{
@@ -309,7 +313,6 @@ alert (this._theaterCount);
 		}
 
 		this._title = temp.substring (0, temp.indexOf (" - MovieStock"));
-alert (this._title);
 		return this.substring (page, ("<!--                  Begin: Page Body                      -->"));
 	}
 }

@@ -3,11 +3,24 @@
 
 class MovieStock extends Fetch
 {
-	_title = undefined;
+//		_title = undefined;
 
 	constructor ()
 	{
 		super();			//	invoke the constructor of the parent class
+
+//	Everything defaults to undefined...
+
+this._dateDateDelisted = undefined;
+this._dateIPO = undefined;
+this._dateReleased = undefined;
+this._domesticGross = undefined;
+this._genre = undefined;
+this._MPAARating = undefined;
+this._phase = undefined;
+this._status = undefined;
+this._theaterCount = undefined;
+this._title = undefined;
 	}
 
 	fetch (ticker)
@@ -139,9 +152,10 @@ alert ("gross");
 		{
 			page = this.substring (page, "<td class=\"label\">Release&nbsp;Date:</td><td>");
 			const temp = page.substring (0, page.indexOf ("</td>"));
-			if (temp == "n/a")
-				this._dateReleased = undefined;
-			else
+//				if (temp == "n/a")
+//					this._dateReleased = undefined;
+//				else
+			if (temp != "n/a")
 				this._dateReleased = new Date (temp);
 
 			return page;
@@ -247,22 +261,24 @@ alert ("gross");
 				//	certain it is always included otherwise, even if the value is "n/a".  If release date is not in the source
 				//	and the status of the MovieStock is not "Inactive", it's needs to be investigated...
 
-				if (error == "Invalid release pattern")
-				{
+//					if (error == "Invalid release pattern")
+				if (error != "Invalid release pattern")
+					throw error;
+//					{
 					if (this._releasePattern.indexOf ("wide") != -1)
 					{
 						this._releasePattern = "Wide";
-						return page;
+//							return page;
 					}
-
+					else
 					if (this._releasePattern.indexOf ("limited") != -1)
 					{
 						this._releasePattern = "Limited";
-						return page;
+//							return page;
 					}
-				}
-
-				throw error;
+//					}
+//	
+//					throw error;
 			}
 
 		return page;
@@ -291,13 +307,14 @@ alert ("gross");
 	{
 		page = this.substring (page, "<td class=\"label\">Theaters:</td><td>");
 		let temp = page.substring (0, page.indexOf ("</td>"));
-		if ((temp == "") || (temp == "n/a"))
-		{
-			//	Not every film has a theater count, many have not even been in theaters and some never will be.
-	
-			this.theaterCount = undefined;
-		}
-		else
+//			if ((temp == "") || (temp == "n/a"))
+//			{
+//				//	Not every film has a theater count, many have not even been in theaters and some never will be.
+//		
+//				this.theaterCount = undefined;
+//			}
+//			else
+		if ((temp != "") && (temp != "n/a"))
 			try
 			{
 				this._theaterCount = this.convertToNumber (temp);

@@ -244,7 +244,15 @@ alert (this._domesticGross);
 //
 //	ANyway, two films that started out limited and expanded to wide are "A Real Pain" (ARLPN) and "A Better Man"
 //	(BETMN).
-throw error;
+//
+//	Even if I use the release date given on the StarBond page, I still need the release pattern.
+if (this._releasePattern.indexOf ("Wide") != -1)
+	this._releasePattern = "Wide";
+else
+	if (this._releasePattern.indexOf ("Limited") != -1)
+		this._releasePattern = "Limited";
+	else
+		throw error;
 		}
 //			return this.substring (page, ("</td>"));
 	}
@@ -255,10 +263,10 @@ throw error;
 			throw "Invalid release pattern: " + string;
 	}
 
-	calculateDelistDate (date, pattern)
-	{
-
-	}
+//		calculateDelistDate (date, pattern)
+//		{
+//	Possibly this method belongs to StarBonds, not MovieStocks
+//		}
 
 	extractStatus (page)
 	{

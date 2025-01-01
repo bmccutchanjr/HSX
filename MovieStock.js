@@ -9,18 +9,21 @@ class MovieStock extends Fetch
 	{
 		super();			//	invoke the constructor of the parent class
 
-//	Everything defaults to undefined...
+		//	Everything defaults to undefined...
 
-this._dateDateDelisted = undefined;
-this._dateIPO = undefined;
-this._dateReleased = undefined;
-this._domesticGross = undefined;
-this._genre = undefined;
-this._MPAARating = undefined;
-this._phase = undefined;
-this._status = undefined;
-this._theaterCount = undefined;
-this._title = undefined;
+		this._dateDateDelisted = undefined;
+		this._dateIPO = undefined;
+		this._dateReleased = undefined;
+		this._domesticGross = undefined;
+		this._genre = undefined;
+		this._MPAARating = undefined;
+		this._phase = undefined;
+		this._sharesHeldLong = undefined;
+		this._sharesHeldShort = undefined;
+		this._sharesTraded = undefined;
+		this._status = undefined;
+		this._theaterCount = undefined;
+		this._title = undefined;
 	}
 
 	fetch (ticker)
@@ -47,35 +50,24 @@ this._title = undefined;
 						page = this.extractTitle (page);
 						page = this.extractStatus (page);
 						page = this.extractDateIPO (page);
-//	alert ("genre");
 						page = this.extractGenre (page);
-//	alert (this._genre);
-//	alert ("rating");
 						page = this.extractMPAARating (page);
-//	alert (this._rating);
-//	alert ("production phase");
 						page = this.extractPhase(page);
-//	alert (this._phase);
-//	alert ("date release");
 						page = this.extractDateReleased (page);
-//	alert (this._dateReleased);
-alert ("release pattern");
-//	alert ("page: " + page.substring (0, 25));
-if (this._dateReleased != undefined)
-{
-	//	Not every film has a release date and it seems the source page omits release pattern when this is the
-	//	case.  In any event, release pattern is only relevant if a film does have a release date.  So, if there's
-	//	no release date, don't even look for the release pattern.  (The same could go for domestic gross and theater
-	//	count as well, except the source page seems to always include those.)
-						page = this.extractReleasePattern (page);
-alert (this._releasePattern);
-alert ("gross");
-						page = this.extractDomesticGross (page);
-//	alert (this._domesticGross);
-//	alert ("theater count");
-						page = this.extractTheaterCount (page);
-//	alert (this._theaterCount);
-}
+
+						if (this._dateReleased != undefined)
+						{
+							//	Not every film has a release date and it seems the source page omits release pattern when
+							//	this is the case.  In any event, release pattern is only relevant if a film does have a
+							//	release date.  The same could go for domestic gross and theater count as well (except the
+							//	source page seems to always include those).  So if release date is undefined, skip release
+							//	pattern, domestic gross and theater count.
+
+							page = this.extractReleasePattern (page);
+							page = this.extractDomesticGross (page);
+							page = this.extractTheaterCount (page);
+						}
+
 					//	get attached StarBonds
 					//	get current price
 					//	get shares held long
@@ -89,6 +81,8 @@ alert ("gross");
 		})
 	}
 
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	Functions to extract specific bits of data from the page.  These functions are in alphabetical order, to make
 	//	it easier to find them.
 
@@ -152,9 +146,6 @@ alert ("gross");
 		{
 			page = this.substring (page, "<td class=\"label\">Release&nbsp;Date:</td><td>");
 			const temp = page.substring (0, page.indexOf ("</td>"));
-//				if (temp == "n/a")
-//					this._dateReleased = undefined;
-//				else
 			if (temp != "n/a")
 				this._dateReleased = new Date (temp);
 
@@ -239,21 +230,11 @@ alert ("gross");
 		//	The delist date is needed to properly calculate the Trailing Average Gross (TAG) of a StarBond, but is
 		//	irrelevant for dead delisted MovieStocks and films without a release date assigned.
 
-//			this._releasePattern = undefined;		//	default value
-//	
-//	
-//			if (this._dateReleased != undefined)
 			try
 			{
 				page = this.substring (page, "<td class=\"label\">Release&nbsp;Pattern:</td><td>");
 				this._releasePattern = page.substring (0, page.indexOf ("</td>"));
 				this.isValidReleasePattern (this._releasePattern)
-//	If a film has a release date and a release pattern, it also has a delist date.  And I may need the delist
-//	date to calculate the new TAG of a StarBond (a StarBond can be attached to more than one MovieStock that
-//	is being delisted on the same day).  If this MovieStock is active, has a release date and a release pattern but
-//	doesn't have a delist date -- calculate it,
-//					if (this._dateDateDelisted == undecided)
-//						this._dateDateDelisted = this.calculateDelistDate (this._dateReleased, this._releasePattern);
 			}
 			catch (error)
 			{
@@ -261,24 +242,14 @@ alert ("gross");
 				//	certain it is always included otherwise, even if the value is "n/a".  If release date is not in the source
 				//	and the status of the MovieStock is not "Inactive", it's needs to be investigated...
 
-//					if (error == "Invalid release pattern")
 				if (error != "Invalid release pattern")
 					throw error;
-//					{
-					if (this._releasePattern.indexOf ("wide") != -1)
-					{
-						this._releasePattern = "Wide";
-//							return page;
-					}
-					else
+
+				if (this._releasePattern.indexOf ("wide") != -1)
+					this._releasePattern = "Wide";
+				else
 					if (this._releasePattern.indexOf ("limited") != -1)
-					{
 						this._releasePattern = "Limited";
-//							return page;
-					}
-//					}
-//	
-//					throw error;
 			}
 
 		return page;
@@ -307,13 +278,7 @@ alert ("gross");
 	{
 		page = this.substring (page, "<td class=\"label\">Theaters:</td><td>");
 		let temp = page.substring (0, page.indexOf ("</td>"));
-//			if ((temp == "") || (temp == "n/a"))
-//			{
-//				//	Not every film has a theater count, many have not even been in theaters and some never will be.
-//		
-//				this.theaterCount = undefined;
-//			}
-//			else
+
 		if ((temp != "") && (temp != "n/a"))
 			try
 			{

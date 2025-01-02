@@ -49,7 +49,14 @@ function fetchMovieStock (event)
 
 	const movie = new MovieStock;
 	movie.fetch (ticker)
-	.then (page => { getStarBondSection().innerText = JSON.stringify (page) } )
+	.then (page =>
+	{
+		appendStarBonds (movie);
+
+		const div = document.createElement ("div");
+		div.innerText = JSON.stringify (page);
+		document.getElementById ("starbond-section").append (div);
+	} )
 	.catch (error => { alert (error) } )
 }
 
@@ -86,9 +93,38 @@ function appendNewMovieStockDiv (s, t)
 
 function getStarBondSection ()
 {
-	return getSection ("starbond-section");
+	const main = document.getElementsByTagName ("main")[0];
+
+	let section = document.getElementById ("starbond-section");
+	if (section != undefined)
+		main.removeChild (section);
+
+	section = document.createElement ("section");
+	section.setAttribute ("id", "starbond-section");
+	main.append (section);
+
+	return section;
 }
 
+const bonds = [];
+
+function appendStarBonds (movie)
+{
+	let sBond = movie.getNextStarBond ();
+	while (sBond)
+	{
+		bonds.push (sBond);
+		sBond = movie.getNextStarBond (sBond.ticker);
+	}
+
+	const section = getStarBondSection();
+	bonds.forEach (s =>
+	{
+		const div = document.createElement ("div");
+		div.innerText = s.name;
+		section.append (div);
+	} )
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //	miscellaneous

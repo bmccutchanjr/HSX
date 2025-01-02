@@ -88,6 +88,7 @@ this._attachedStarBonds = [];
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	Functions to extract specific bits of data from the page.  These functions are in alphabetical order, to make
 	//	it easier to find them.
 
@@ -115,8 +116,24 @@ this._attachedStarBonds = [];
 		obj.name = source.substring (0, source.indexOf (" (<a href")).trim();
 		source = this.substring (source, "security/view/");
 		obj.ticker = source.substring (0, source.indexOf ("\">")).trim();
-		this._attachedStarBonds.push (obj);
+
+		//	StarBonds can appear in the MovieStock cast more than once (as an actor and as a director).  For my purposes,
+		//	StarBonds should be unique.
+
+		if (this.isStarBondUnique (obj.name))
+				this._attachedStarBonds.push (obj);
+
 		return source;
+	}
+
+	isStarBondUnique (name)
+	{
+		const index = this._attachedStarBonds.findIndex (sb =>
+			{
+				sb.name == name;
+			} )
+		if (index < 0) return true;
+		return false;
 	}
 
 	extractDateDelisted (page)
@@ -336,5 +353,27 @@ this._attachedStarBonds = [];
 
 		this._title = temp.substring (0, temp.indexOf (" - MovieStock"));
 		return this.substring (page, ("<!--                  Begin: Page Body                      -->"));
+	}
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	Getter methods
+
+	getNextStarBond (last = null)
+	{
+		if (last == null)
+			return this._attachedStarBonds[0];
+
+		const index = this.getStarBondIndex (last);
+		if (index < this._attachedStarBonds.length)
+			return this._attachedStarBonds[index + 1];
+
+		return false;
+	}
+
+	getStarBondIndex (target)
+	{
+		return this._attachedStarBonds.findIndex (sb => sb.ticker == target );
 	}
 }

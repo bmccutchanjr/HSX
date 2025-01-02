@@ -121,6 +121,7 @@ function appendStarBonds (movie)
 	bonds.forEach (s =>
 	{
 		const div = document.createElement ("div");
+		div.classList.add ("starbond");
 		div.innerText = s.name;
 		section.append (div);
 	} )

@@ -1,12 +1,60 @@
+/*	******************************************************************************************************************	*/
+/*																														*/
+
+#ticker-section
+{
+	--border-radius: 15px;
+	--padding: var(--border-radius);
+
+	background-color: #dfdfff;
+	/* border: 1px solid black; */
+	border: 1px solid #afafcf;
+	border-radius: var(--padding);
+	margin-bottom: 10px;
+	padding: var(--padding);
+	width: 100%;
+}
+
+/*	******************************************************************************************************************	*/
+/*																														*/
+
+#moviestock-section
+{
+	margin-bottom: 10px;
+}
+
 div.moviestock
 {
-	--padding: 5px;
-	border: 1px solid black;
+	--border-radius: 15px;
+	--padding: 2px;
+
+	background-color: #dfffdf;
+	/* border: 1px solid black; */
+	border: 1px solid #afcfaf;
 	display: flex;
 		flex-direction: row;
 		flex-wrap: nowrap;
+	/* margin-bottom: var(--padding); */
 	margin-bottom: 5px;
-	padding: 5px;
+	padding: var(--padding);
+	padding-left: var(--border-radius);
+	padding-right: var(--border-radius);
+}
+
+div.moviestock:first-child
+{
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+	padding-top: var(--border-radius);
+}
+
+
+div.moviestock:last-child
+{
+	border-bottom-left-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
+	margin-bottom: 0px;
+	padding-bottom: var(--border-radius);
 }
 
 div.moviestock > *
@@ -23,3 +71,57 @@ div.moviestock > *:last-child
 	margin-right: 0px;
 }
 
+
+/*	******************************************************************************************************************	*/
+/*																														*/
+
+#starbond-section
+{
+}
+
+div.starbond
+{
+	--border-radius: 15px;
+	--padding: 2px;
+
+	background-color: #ffffdf;
+	/* border: 1px solid black; */
+	border: 1px solid #cfcfaf;
+	display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+	/* margin-bottom: var(--padding); */
+	margin-bottom: 5px;
+	padding: var(--padding);
+	padding-left: var(--border-radius);
+	padding-right: var(--border-radius);
+}
+
+div.starbond:first-child
+{
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+	padding-top: var(--border-radius);
+}
+
+
+div.starbond:last-child
+{
+	border-bottom-left-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
+	margin-bottom: 0px;
+	padding-bottom: var(--border-radius);
+}
+
+div.starbond > *
+{
+	display: inline-block;
+	flex-grow: 0;
+	flex-shrink: 0;
+	margin-right: 5px;
+}
+
+div.starbond > *:last-child
+{
+	margin-right: 0px;
+}

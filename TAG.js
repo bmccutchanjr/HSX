@@ -45,19 +45,26 @@ function fetchMovieStock (event)
 	}
 
 	const section = getMovieStockSection();
-	appendNewMovieStockDiv(section, ticker);
-
-	const movie = new MovieStock;
-	movie.fetch (ticker)
-	.then (page =>
+	if (section.querySelector ("#" + ticker) != undefined)
+		alert (ticker + " is duplicated");
+	else
 	{
-		appendStarBonds (movie);
+//			appendNewMovieStockDiv(section, ticker);
+		addNewMovieStockDiv(section, ticker);
 
-		const div = document.createElement ("div");
-		div.innerText = JSON.stringify (page);
-		document.getElementById ("starbond-section").append (div);
-	} )
-	.catch (error => { alert (error) } )
+		const movie = new MovieStock;
+		movie.fetch (ticker)
+		.then (page =>
+		{
+			appendStarBonds (movie);
+
+			const div = document.createElement ("div");
+			div.innerText = JSON.stringify (page);
+			document.getElementById ("starbond-section").append (div);
+
+		} )
+		.catch (error => { alert (error) } )
+	}
 }
 
 function getMovieStockSection ()
@@ -65,7 +72,8 @@ function getMovieStockSection ()
 	return getSection ("moviestock-section");
 }
 
-function appendNewMovieStockDiv (s, t)
+//	function appendNewMovieStockDiv (s, t)
+function addNewMovieStockDiv (s, t)
 {
 	const div = document.createElement ("div");
 	div.classList.add ("moviestock");
@@ -83,9 +91,33 @@ function appendNewMovieStockDiv (s, t)
 	title.setAttribute ("id", "title");
 	div.append (title);
 
-	s.append (div);
+	insertMovieStock (s, t, div);
 }
 
+function insertMovieStock (parent, ticker, div)
+{
+	//	Add the specified DOM element to the children of the specified parent container so that it the list of
+	//	children will appear in alphabetical order.  This is done by iterating the children of parent and comparing
+	//	ticker to the id attribute of each child element (each element added to parent has id attribure set to its
+	//	ticker).  insertBefore() is used to add the new elwment before the indicated element.
+
+	let done = false;
+
+	const collection = parent.children;
+	for (let i=0; i<collection.length; i++)
+	{
+		const item = collection.item(i);
+		if (item.getAttribute ("id") > ticker)
+		{
+			parent.insertBefore (div, item);
+			done = true;
+			break;
+		}
+	}
+
+	if (!done)
+		parent.append (div);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //	Fetch a StarBond

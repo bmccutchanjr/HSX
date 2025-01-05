@@ -63,7 +63,17 @@ function fetchMovieStock (event)
 			document.getElementById ("starbond-section").append (div);
 
 		} )
-		.catch (error => { alert (error) } )
+		.catch (error =>
+		{
+			//	Indicate any fatal errors (serious enough that the script couldn't, or perhaps shouldn't continue
+			//	scraping data) that occur while  processing a MovieStock.  For the time being, the error test is
+			//	conveyed as the title property of the element representing the MovieStock.  Perhaps the error text
+			//	should replace the MovieStock's title?
+			
+			const div = document.getElementById (ticker);
+			div.classList.add ("error");
+			div.title = error;
+		} )
 	}
 }
 
@@ -91,12 +101,12 @@ function addNewMovieStockDiv (s, t)
 	title.setAttribute ("id", "title");
 	div.append (title);
 
-	insertMovieStock (s, t, div);
+	insertSecurity (s, t, div);
 }
 
-function insertMovieStock (parent, ticker, div)
+function insertSecurity (parent, ticker, div)
 {
-	//	Add the specified DOM element to the children of the specified parent container so that it the list of
+	//	Add the specified DOM element to the children of the specified parent container so the list of
 	//	children will appear in alphabetical order.  This is done by iterating the children of parent and comparing
 	//	ticker to the id attribute of each child element (each element added to parent has id attribure set to its
 	//	ticker).  insertBefore() is used to add the new elwment before the indicated element.

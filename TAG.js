@@ -32,7 +32,12 @@ function handleTickerFocus (event)
 //
 
 function fetchMovieStock (event)
-{	event.preventDefault();
+{
+//	This function may be generic enough to put it in the super class.  Could any code that truly is specific to either a
+//	MovieStock or StarBond could be handled with a callback?  Is there any code truly specific to MovieStock or a
+//	StarBond?  Resolve this when coding the StarBond class.
+
+	event.preventDefault();
 	const parent = event.target.parentElement;
 	const ticker = parent.querySelector ("input").value
 	if (ticker == "")

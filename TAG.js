@@ -54,7 +54,6 @@ function fetchMovieStock (event)
 		alert (ticker + " is duplicated");
 	else
 	{
-//			appendNewMovieStockDiv(section, ticker);
 		addNewMovieStockDiv(section, ticker);
 
 		const movie = new MovieStock;
@@ -63,9 +62,9 @@ function fetchMovieStock (event)
 		{
 			appendStarBonds (movie);
 
-			const div = document.createElement ("div");
-			div.innerText = JSON.stringify (page);
-			document.getElementById ("starbond-section").append (div);
+//				const div = document.createElement ("div");
+//				div.innerText = JSON.stringify (page);
+//				document.getElementById ("starbond-section").append (div);
 
 		} )
 		.catch (error =>
@@ -87,7 +86,6 @@ function getMovieStockSection ()
 	return getSection ("moviestock-section");
 }
 
-//	function appendNewMovieStockDiv (s, t)
 function addNewMovieStockDiv (s, t)
 {
 	const div = document.createElement ("div");

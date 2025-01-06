@@ -3,15 +3,13 @@
 
 class MovieStock extends Fetch
 {
-//		_title = undefined;
-
 	constructor ()
 	{
 		super();			//	invoke the constructor of the parent class
 
 		//	Everything defaults to undefined...
 
-this._attachedStarBonds = [];
+		this._attachedStarBonds = [];
 		this._dateDateDelisted = undefined;
 		this._dateIPO = undefined;
 		this._dateReleased = undefined;
@@ -19,10 +17,10 @@ this._attachedStarBonds = [];
 		this._genre = undefined;
 		this._MPAARating = undefined;
 		this._phase = undefined;
-		this._sharesHeldLong = undefined;
-		this._sharesHeldShort = undefined;
-		this._sharesTraded = undefined;
-		this._status = undefined;
+//			this._sharesHeldLong = undefined;
+//			this._sharesHeldShort = undefined;
+//			this._sharesTraded = undefined;
+//			this._status = undefined;
 		this._theaterCount = undefined;
 		this._tickerSymbol = undefined;
 		this._title = undefined;
@@ -52,7 +50,7 @@ this._attachedStarBonds = [];
 					//	It should go without saying, but the data must be extracted in the order it's coded in the page.
 
 					page = this.extractTitle (page);
-					page = this.extractStatus (page);
+					page = this.extractStatus (page);			//	a method of the parent (super) class
 					page = this.extractDateIPO (page);
 					page = this.extractGenre (page);
 					page = this.extractMPAARating (page);
@@ -73,14 +71,14 @@ this._attachedStarBonds = [];
 					}
 
 					page = this.extractAttachedStarBonds (page);
+					page = this.extractSharePrice (page);
+					page = this.extractSharesHeldLong (page);
+					page = this.extractSharesHeldShort (page);
+					page = this.extractSharesTraded (page);
 
-					//	get current price
-					//	get shares held long
-					//	get shares held short
-					//	get shares traded today
-
-						resolve (page);
-					}
+//						resolve (page);
+					resolve (true);
+				}
 			} )
 			.catch (error => { reject (error) } )			
 		})
@@ -108,7 +106,9 @@ this._attachedStarBonds = [];
 	
 	extractNextStarBond (source)
 	{
-		//	Scrape one StarBond from the source
+		//	Attached StarBonds are those StarBonds representing actors and/or directors that are involved with a film.
+		//	These StarBonds are displayed in a table near the end of the MovieStock and are extracted from the source
+		//	one at a time.
 
 		const obj = {};
 
@@ -116,9 +116,6 @@ this._attachedStarBonds = [];
 		obj.name = source.substring (0, source.indexOf (" (<a href")).trim();
 		source = this.substring (source, "security/view/");
 		obj.ticker = source.substring (0, source.indexOf ("\">")).trim();
-
-		//	StarBonds can appear in the MovieStock cast more than once (as an actor and as a director).  For my purposes,
-		//	StarBonds should be unique.
 
 		if (this.isStarBondUnique (obj.name))
 				this._attachedStarBonds.push (obj);
@@ -128,12 +125,15 @@ this._attachedStarBonds = [];
 
 	isStarBondUnique (name)
 	{
-		const index = this._attachedStarBonds.findIndex (sb =>
-			{
-				sb.name == name;
-			} )
-		if (index < 0) return true;
-		return false;
+		//	StarBonds can appear in the MovieStock cast more than once (as an actor and as a director), but for my purposes
+		//	StarBonds should be unique (HSX will only adjust a StarBond one time for any given MovieStock).
+
+		this._attachedStarBonds.forEach (sb =>
+		{
+			if (sb.name == name) return false;
+		} )
+
+		return true;
 	}
 
 	extractDateDelisted (page)
@@ -316,13 +316,13 @@ this._attachedStarBonds = [];
 //	Possibly this method belongs to StarBonds, not MovieStocks
 //		}
 
-	extractStatus (page)
-	{
-		page = this.substring (page, "<td class=\"label\">Status:</td><td>");
-		this._status = page.substring (0, page.indexOf ("</td>"));
-
-		return page;
-	}
+//		extractStatus (page)
+//		{
+//			page = this.substring (page, "<td class=\"label\">Status:</td><td>");
+//			this._status = page.substring (0, page.indexOf ("</td>"));
+//	
+//			return page;
+//		}
 
 	extractTheaterCount (page)
 	{

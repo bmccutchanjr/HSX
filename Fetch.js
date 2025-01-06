@@ -1,17 +1,22 @@
-//	Fetch is the parent class of several other classes (maybe as many as five), and as such is not meant to be
-//	instantiated directly.  Its methods provide basic functionality (fetch a page, parse data from the page, etc.)
-//	that is required in each of its children.
+//	Fetch is the parent class of several other classes (maybe as many as five), and is not meant to be instantiated
+//	directly.  Its has properties and methods (fetch a page, parse data from the page, etc.) that are required by 
+//	more than one of its children...why write the code two, three or four time?
 
 class Fetch
 {
-	#_page = undefined;
-
 	constructor ()
 	{
-		//	Class constructors cannot return a value, and that means there is very little this can do.
+		//	Initialize those properties that are common to MovieStocks and StarBonds.  
 
-		this.#_page = undefined;
+		this._sharePrice = undefined;
+		this._sharesHeldLong = undefined;
+		this._sharesHeldShort = undefined;
+		this._sharesTraded = undefined;
+		this._status = undefined;
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	fetchPage (what)
 	{
@@ -41,6 +46,74 @@ class Fetch
 		} )
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	Methods to extract data shared by MovieStocks and Starbonds (status, current price, shares traded, etc.)
+	//	
+
+	extractSharePrice (page)
+	{
+		//	It's possible that the target text denoting the current price can appear in an unrelated context, earlier
+		//	in the source.  Remove any unrelated code that comes before the security summary, to be sure I actually get
+		//	what I'm after.
+
+		page = this.substring (page, "<div class=\"security_summary\"");
+		page = this.substring (page, "H$");
+		this._sharePrice = page.substring (0, page.indexOf ("\r\n"));
+
+		return page;
+	}
+
+	extractSharesHeldLong (page)
+	{
+		page = this.substring (page, "Shares Held Long on HSX: <span style=\"text-align: right; color: #333;\">");
+		const temp = page.substring (0, page.indexOf ("</span"));
+		this._sharesHeldLong = this.convertToNumber (temp);
+
+		return page;
+	}
+
+	extractSharesHeldShort (page)
+	{
+		page = this.substring (page, "Shares Held Short on HSX: <span style=\"text-align: right; color: #333;\">");
+		const temp = page.substring (0, page.indexOf ("</span"));
+		this._sharesHeldShort = this.convertToNumber (temp);
+
+		return page;
+	}
+
+	extractSharesTraded (page)
+	{
+		page = this.substring (page, "Trading Volume on HSX (Today): <span style=\"text-align: right; color: #333;\">");
+		const temp = page.substring (0, page.indexOf ("</span"));
+		this._sharesTraded = this.convertToNumber (temp);
+
+		return page;
+	}
+
+	extractStatus (page)
+	{
+		page = this.substring (page, "<td class=\"label\">Status:</td><td>");
+		this._status = page.substring (0, page.indexOf ("</td>"));
+
+		return page;
+	}
+
+	isValidStatus (string)
+	{
+		//	Is the provided string found in an array of acceptable values?  Return true or false... 
+
+		if (["Active", "Halted", "Inactive"].indexOf (string) < 0)
+			return false;
+		else
+			return true; 
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	miscellaneous methods
+	//	
+
 	substring (source, target)
 	{
 		//	Search the provided source string for the target.  Remove any and all text from the source string that preseded
@@ -62,15 +135,5 @@ class Fetch
 		string = string.replaceAll ("$", "");
 		string = string.replaceAll (",", "");
 		return string * 1;
-	}
-
-	isValidStatus (string)
-	{
-		//	Is the provided string found in an array of acceptable values?  Return true or false... 
-
-		if (["Active", "Halted", "Inactive"].indexOf (string) < 0)
-			return false;
-		else
-			return true; 
 	}
 }

@@ -95,8 +95,15 @@ function fetchMovieStock (event)
 			const div = document.getElementById (ticker);
 			div.classList.add ("error");
 			updateFilmTitle (ticker, error);
+
+			setTimeout ( _ => { removeMovieStock (section, div) }, 30000 );
 		} )
 	}
+}
+
+function removeMovieStock (section, div)
+{
+	section.removeChild (div);
 }
 
 function invalidReleaseDate (movie)

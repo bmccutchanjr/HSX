@@ -60,6 +60,16 @@ function fetchMovieStock (event)
 		movie.fetch (ticker)
 		.then (noErrorsFound =>
 		{
+			//	There are fatal errors that cannot be caught in MovieStock.js because that class doen't know how
+			//	the data will be used.
+			//
+			//	For instance, it's perfectly acceptable for a MovieStock to be "Inactive" but that MovieStock
+			//	can't be in theaters and about to delist.  The attached StarBonds won't be adjusted.  There's no
+			//	point in continuing with the MovieStock.
+
+			if (movie.status == "Inactive") throw "This MovieStock is inactive and not available to delist";
+			if (invalidReleaseDate (movie)) throw "This film has not been in theaters and its MovieStock is not available to delist";
+
 			//	Once fetchMovieStock() has completed and I have all of the available data for a given MovieStock, I want
 			//	to update the <div> created to represent that data.  At the very last, I want to get the title of the
 			//	film on the screen (or an error message, should movie.fetch() return false.). 
@@ -87,6 +97,17 @@ function fetchMovieStock (event)
 			updateFilmTitle (ticker, error);
 		} )
 	}
+}
+
+function invalidReleaseDate (movie)
+{
+	//	If a film does not have a release date, or if that release date is in the future, it hasn't been in theaters.
+	//	The MovieStock will not be delisted.  The StarBonds attached to the MovieStock will not be adjusted.
+
+	if (movie.dateReleased == undefined) return true;
+	if (new Date () < new Date (movie.dateReleased)) return true;
+
+	return false;
 }
 
 function addNewMovieStockDiv (s, t)

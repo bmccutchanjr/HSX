@@ -355,6 +355,8 @@ class MovieStock extends Fetch
 	//	some of the data to be retrieved (next StarBond) is not a property.
 	//
 
+	get dateReleased () { return this._dateReleased; }
+
 	get title () { return this._title; }
 
 	getNextStarBond (last = null)

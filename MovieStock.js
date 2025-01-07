@@ -46,14 +46,25 @@ class MovieStock extends Fetch
 					//	It should go without saying, but the data must be extracted in the order it's coded in the page.
 
 					page = this.extractTitle (page);
+//	alert ("status");
 					page = this.extractStatus (page);			//	a method of the parent (super) class
+//	alert ("IPO");
 					page = this.extractDateIPO (page);
+//	alert ("genre");
 					page = this.extractGenre (page);
+//	alert ("MPAA");
 					page = this.extractMPAARating (page);
+//	alert ("phase");
 					page = this.extractPhase(page);
+//	alert ("release");
 					page = this.extractDateReleased (page);
 
-					if (this._dateReleased != undefined)
+//						if (this._dateReleased != undefined)
+//	Just found a MovieStock this a release date but no release pattern.  Spanglish (SPANG) was delisted 10 years
+//	ago and still has the release date on the MovieStock page.  But not release pattern.
+//
+//	This will not work...most films in a TAG are inactive...I NEED GROSS EVEN IF THE MOVIESTOCK IN INACTIVE
+					if (this._status != "Inactive")
 					{
 						//	Not every film has a release date and it seems the source page omits release pattern when
 						//	this is the case.  In any event, release pattern is only relevant if a film does have a
@@ -61,15 +72,28 @@ class MovieStock extends Fetch
 						//	source page seems to always include those).  So if release date is undefined, skip release
 						//	pattern, domestic gross and theater count.
 
+//	alert ("pattern");
 						page = this.extractReleasePattern (page);
+}
+					if (this._dateReleased != undefined)
+{
+//	alert ("gross");
 						page = this.extractDomesticGross (page);
+alert (this._domesticGross);
+//	alert ("theaters");
 						page = this.extractTheaterCount (page);
+alert (this._theaters);
 					}
 
+//	alert ("StarBonds");
 					page = this.extractAttachedStarBonds (page);
+//	alert ("price");
 					page = this.extractSharePrice (page);
+//	alert ("long");
 					page = this.extractSharesHeldLong (page);
+//	alert ("short");
 					page = this.extractSharesHeldShort (page);
+//	alert ("traded");
 					page = this.extractSharesTraded (page);
 
 					//	If I don't resolve something, the Promise that was returned will never be fulfilled.  The
@@ -244,10 +268,17 @@ class MovieStock extends Fetch
 		//	Genre is one of the pieces of data provided by HSX that I have little or no use for.  By nature,
 		//	the value of genre is pretty open-ended.  Trying to validate it may simply not be worth it.
 		
+try
+{
 		page = this.substring (page, "<td class=\"label\">Genre:</td><td>");
 		this._genre = page.substring (0, page.indexOf ("</td>"));
 
 		return page;
+}
+catch (error)
+{
+	throw error + ": genre"
+}
 	}
 
 	extractMPAARating (page)
@@ -256,10 +287,17 @@ class MovieStock extends Fetch
 		//	actually well-defined, with only a few allowable values, but like genre, it simply isn'y worth trying to
 		//	validate it.
 		
+try
+{
 		page = this.substring (page, "<td class=\"label\">MPAA Rating:</td><td>");
 		this._MPAARating = page.substring (0, page.indexOf ("</td>"));
 
 		return page;
+}
+catch (error)
+{
+	throw error + ": genre"
+}
 	}
 
 	extractPhase (page)
@@ -303,6 +341,8 @@ class MovieStock extends Fetch
 				else
 					if (this._releasePattern.indexOf ("limited") != -1)
 						this._releasePattern = "Limited";
+					else
+						throw error;
 			}
 
 		return page;
@@ -335,6 +375,7 @@ class MovieStock extends Fetch
 			}
 
 		return page;
+		const index = this.getStarBondIndex (last);
 	}
 
 	extractTitle (page)

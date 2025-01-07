@@ -75,8 +75,8 @@ class MovieStock extends Fetch
 					//	been collected.
 					//
 					//	There are several properties, and no one function will need them all.  Seems better to resolve
-					//	true or false (I don't resolve false at this time) to fulfill the Promise and let the invokiing
-					//	function use getter methods to retrieve the data it needs..
+					//	true or false (I don't resolve false at this time) to fulfill the Promise and let the invoking
+					//	function know if an error occured.
 
 					resolve (true);
 				}
@@ -220,14 +220,14 @@ class MovieStock extends Fetch
 		//
 		//	Attempting to convert non-numeric data will throw an error.  I simply need to catch that error.
 
-		this._domesticGross = undefined;		//	let domestic gross defaults to undefined
+//			this._domesticGross = undefined;		//	let domestic gross defaults to undefined
 
 		try
 		{
 			page = this.substring (page, "<td class=\"label\">Gross:</td><td>");
 			const temp = page.substring (0, page.indexOf ("</td>"));
 			if ((temp != "") && (temp != "n/a"))
-				this._domesticGross = this.convertToNumber (temp);
+					this._domesticGross = this.convertToNumber (temp);
 
 			return page;
 		}
@@ -317,13 +317,13 @@ class MovieStock extends Fetch
 					if (this._releasePattern.indexOf ("wide") != -1)
 					{
 						this._releasePattern = "Wide";
-						return;
+						return page;
 					}
 
 					if (this._releasePattern.indexOf ("limited") != -1)
 					{
 						this._releasePattern = "Limited";
-						return;
+						return page;
 					}
 
 					throw error + ": release pattern";

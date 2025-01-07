@@ -117,6 +117,7 @@ function addNewMovieStockDiv (s, t)
 	div.setAttribute ("id", t);
 
 	const input = document.createElement ("input");
+	input.setAttribute ("disabled", true);
 	input.title = "The total gross domestic box office when " + t + " is delisted";
 	div.append (input);
 

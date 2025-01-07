@@ -298,7 +298,7 @@ class MovieStock extends Fetch
 			try
 			{
 				page = this.substring (page, "<td class=\"label\">Release&nbsp;Pattern:</td><td>");
-				this._releasePattern = page.substring (0, page.indexOf ("</td>"));
+				this._releasePattern = page.substring (0, page.indexOf ("</td>")).toLowerCase();
 				this.isValidReleasePattern (this._releasePattern)
 			}
 			catch (error)
@@ -316,13 +316,13 @@ class MovieStock extends Fetch
 
 					if (this._releasePattern.indexOf ("wide") != -1)
 					{
-						this._releasePattern = "Wide";
+						this._releasePattern = "wide";
 						return page;
 					}
 
 					if (this._releasePattern.indexOf ("limited") != -1)
 					{
-						this._releasePattern = "Limited";
+						this._releasePattern = "limited";
 						return page;
 					}
 
@@ -335,7 +335,7 @@ class MovieStock extends Fetch
 
 	isValidReleasePattern (string)
 	{
-		if ( [ "Limited", "Modarate", "Wide" ].indexOf (string) < 0)
+		if ( [ "limited", "modarate", "wide" ].indexOf (string) < 0)
 			throw "Invalid release pattern";
 	}
 

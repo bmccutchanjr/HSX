@@ -46,54 +46,28 @@ class MovieStock extends Fetch
 					//	It should go without saying, but the data must be extracted in the order it's coded in the page.
 
 					page = this.extractTitle (page);
-//	alert ("status");
 					page = this.extractStatus (page);			//	a method of the parent (super) class
-//	alert ("IPO");
 					page = this.extractDateIPO (page);
-//	alert ("genre");
 					page = this.extractGenre (page);
-//	alert ("MPAA");
 					page = this.extractMPAARating (page);
-//	alert ("phase");
 					page = this.extractPhase(page);
-//	alert ("release");
 					page = this.extractDateReleased (page);
+					page = this.extractReleasePattern (page);
 
-//						if (this._dateReleased != undefined)
-//	Just found a MovieStock this a release date but no release pattern.  Spanglish (SPANG) was delisted 10 years
-//	ago and still has the release date on the MovieStock page.  But not release pattern.
-//
-//	This will not work...most films in a TAG are inactive...I NEED GROSS EVEN IF THE MOVIESTOCK IN INACTIVE
-					if (this._status != "Inactive")
-					{
-						//	Not every film has a release date and it seems the source page omits release pattern when
-						//	this is the case.  In any event, release pattern is only relevant if a film does have a
-						//	release date.  The same could go for domestic gross and theater count as well (except the
-						//	source page seems to always include those).  So if release date is undefined, skip release
-						//	pattern, domestic gross and theater count.
-
-//	alert ("pattern");
-						page = this.extractReleasePattern (page);
-}
 					if (this._dateReleased != undefined)
-{
-//	alert ("gross");
+					{
+						//	It should go without saying, but if a film hasn't been in a theater, it can't have
+						//	earned any money at the box office.  The source page may omit domestic gross and
+						//	theater count for the associated MovieStock.
+
 						page = this.extractDomesticGross (page);
-alert (this._domesticGross);
-//	alert ("theaters");
 						page = this.extractTheaterCount (page);
-alert (this._theaters);
 					}
 
-//	alert ("StarBonds");
 					page = this.extractAttachedStarBonds (page);
-//	alert ("price");
 					page = this.extractSharePrice (page);
-//	alert ("long");
 					page = this.extractSharesHeldLong (page);
-//	alert ("short");
 					page = this.extractSharesHeldShort (page);
-//	alert ("traded");
 					page = this.extractSharesTraded (page);
 
 					//	If I don't resolve something, the Promise that was returned will never be fulfilled.  The
@@ -268,17 +242,17 @@ alert (this._theaters);
 		//	Genre is one of the pieces of data provided by HSX that I have little or no use for.  By nature,
 		//	the value of genre is pretty open-ended.  Trying to validate it may simply not be worth it.
 		
-try
-{
-		page = this.substring (page, "<td class=\"label\">Genre:</td><td>");
-		this._genre = page.substring (0, page.indexOf ("</td>"));
+		try
+		{
+			page = this.substring (page, "<td class=\"label\">Genre:</td><td>");
+			this._genre = page.substring (0, page.indexOf ("</td>"));
 
-		return page;
-}
-catch (error)
-{
-	throw error + ": genre"
-}
+			return page;
+		}
+		catch (error)
+		{
+			throw error + ": genre";
+		}
 	}
 
 	extractMPAARating (page)
@@ -287,17 +261,17 @@ catch (error)
 		//	actually well-defined, with only a few allowable values, but like genre, it simply isn'y worth trying to
 		//	validate it.
 		
-try
-{
-		page = this.substring (page, "<td class=\"label\">MPAA Rating:</td><td>");
-		this._MPAARating = page.substring (0, page.indexOf ("</td>"));
+		try
+		{
+			page = this.substring (page, "<td class=\"label\">MPAA Rating:</td><td>");
+			this._MPAARating = page.substring (0, page.indexOf ("</td>"));
 
-		return page;
-}
-catch (error)
-{
-	throw error + ": genre"
-}
+			return page;
+		}
+		catch (error)
+		{
+			throw error + ": MPAA rating";
+		}
 	}
 
 	extractPhase (page)
@@ -329,20 +303,31 @@ catch (error)
 			}
 			catch (error)
 			{
-				//	Release pattern may be omitted from the source page if the MovieStock has been dead delisted.  I'm fairly,
-				//	certain it is always included otherwise, even if the value is "n/a".  If release date is not in the source
-				//	and the status of the MovieStock is not "Inactive", it's needs to be investigated...
+				//	Release pattern may be omitted from the source page.  For instance: if the MovieStock has been
+				//	delisted or a release date has not been set.  I need a release pattern to calculate the date a
+				//	MovieStock will delist for some few TAG calculations.  But for the vast majority release pattern
+				//	is irrelevant, and I can't make that determination here.  For those few where it counts,
+				//	I can catch the error better somewhere else.
 
-				if (error != "Invalid release pattern")
-					throw error;
-
-				if (this._releasePattern.indexOf ("wide") != -1)
-					this._releasePattern = "Wide";
-				else
-					if (this._releasePattern.indexOf ("limited") != -1)
-						this._releasePattern = "Limited";
-					else
+				if (error != "Target string not found within source page")
+				{
+					if (error != "Invalid release pattern")
 						throw error;
+
+					if (this._releasePattern.indexOf ("wide") != -1)
+					{
+						this._releasePattern = "Wide";
+						return;
+					}
+
+					if (this._releasePattern.indexOf ("limited") != -1)
+					{
+						this._releasePattern = "Limited";
+						return;
+					}
+
+					throw error + ": release pattern";
+				}
 			}
 
 		return page;
@@ -397,6 +382,8 @@ catch (error)
 	//
 
 	get dateReleased () { return this._dateReleased; }
+
+	get status () { return this._status; }
 
 	get title () { return this._title; }
 

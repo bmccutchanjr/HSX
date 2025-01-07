@@ -58,14 +58,22 @@ function fetchMovieStock (event)
 
 		const movie = new MovieStock;
 		movie.fetch (ticker)
-		.then (page =>
+		.then (noErrorsFound =>
 		{
+			//	Once fetchMovieStock() has completed and I have all of the available data for a given MovieStock, I want
+			//	to update the <div> created to represent that data.  At the very last, I want to get the title of the
+			//	film on the screen (or an error message, should movie.fetch() return false.). 
+
+			if (noErrorsFound)
+				updateFilmTitle (ticker, movie.title);
+			else
+			{
+				const div = document.getElementById (ticker);
+				div.classList.add ("error");
+				updateFilmTitle (ticker, movie.error);
+			}
+
 			appendStarBonds (movie);
-
-//				const div = document.createElement ("div");
-//				div.innerText = JSON.stringify (page);
-//				document.getElementById ("starbond-section").append (div);
-
 		} )
 		.catch (error =>
 		{
@@ -76,14 +84,9 @@ function fetchMovieStock (event)
 			
 			const div = document.getElementById (ticker);
 			div.classList.add ("error");
-			div.title = error;
+			updateFilmTitle (ticker, error);
 		} )
 	}
-}
-
-function getMovieStockSection ()
-{
-	return getSection ("moviestock-section");
 }
 
 function addNewMovieStockDiv (s, t)
@@ -105,6 +108,11 @@ function addNewMovieStockDiv (s, t)
 	div.append (title);
 
 	insertSecurity (s, t, div);
+}
+
+function getMovieStockSection ()
+{
+	return getSection ("moviestock-section");
 }
 
 function insertSecurity (parent, ticker, div)
@@ -130,6 +138,14 @@ function insertSecurity (parent, ticker, div)
 
 	if (!done)
 		parent.append (div);
+}
+
+function updateFilmTitle (ticker, text)
+{
+	//	Update the div#title of the container identified with id = ticker.
+
+	const mDiv = document.getElementById (ticker);
+	mDiv.querySelector ("#title").innerText = text;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

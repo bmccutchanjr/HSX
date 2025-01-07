@@ -17,10 +17,6 @@ class MovieStock extends Fetch
 		this._genre = undefined;
 		this._MPAARating = undefined;
 		this._phase = undefined;
-//			this._sharesHeldLong = undefined;
-//			this._sharesHeldShort = undefined;
-//			this._sharesTraded = undefined;
-//			this._status = undefined;
 		this._theaterCount = undefined;
 		this._tickerSymbol = undefined;
 		this._title = undefined;
@@ -76,7 +72,14 @@ class MovieStock extends Fetch
 					page = this.extractSharesHeldShort (page);
 					page = this.extractSharesTraded (page);
 
-//						resolve (page);
+					//	If I don't resolve something, the Promise that was returned will never be fulfilled.  The
+					//	invoking method or function will wait forever and nothing will be done with the data that's
+					//	been collected.
+					//
+					//	There are several properties, and no one function will need them all.  Seems better to resolve
+					//	true or false (I don't resolve false at this time) to fulfill the Promise and let the invokiing
+					//	function use getter methods to retrieve the data it needs..
+
 					resolve (true);
 				}
 			} )
@@ -86,9 +89,9 @@ class MovieStock extends Fetch
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	Functions to extract specific bits of data from the page.  These functions are in alphabetical order, to make
 	//	it easier to find them.
+	//
 
 	extractAttachedStarBonds (page)
 	{
@@ -316,14 +319,6 @@ class MovieStock extends Fetch
 //	Possibly this method belongs to StarBonds, not MovieStocks
 //		}
 
-//		extractStatus (page)
-//		{
-//			page = this.substring (page, "<td class=\"label\">Status:</td><td>");
-//			this._status = page.substring (0, page.indexOf ("</td>"));
-//	
-//			return page;
-//		}
-
 	extractTheaterCount (page)
 	{
 		page = this.substring (page, "<td class=\"label\">Theaters:</td><td>");
@@ -355,10 +350,12 @@ class MovieStock extends Fetch
 		return this.substring (page, ("<!--                  Begin: Page Body                      -->"));
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	Methods to retrieve data from this object.  Not all of these methods are technically 'getter' methods because
+	//	some of the data to be retrieved (next StarBond) is not a property.
+	//
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//	Getter methods
+	get title () { return this._title; }
 
 	getNextStarBond (last = null)
 	{

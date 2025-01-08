@@ -403,4 +403,13 @@ class MovieStock extends Fetch
 	{
 		return this._attachedStarBonds.findIndex (sb => sb.ticker == target );
 	}
+
+	hasAttachedStarBonds ()
+	{
+		//	Return true or false depending on the length of this._attachedStarBonds[].  It should go without saying, but
+		//	if a MovieStock has no attached StarBonds, no StarBonds will be adjusted when the MovieStock is delisted.
+
+		if (this._attachedStarBonds.length == 0) return false;
+		return true;
+	}
 }

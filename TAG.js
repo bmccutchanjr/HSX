@@ -67,10 +67,20 @@ function fetchMovieStock (event)
 			//	can't be in theaters and about to delist.  The attached StarBonds won't be adjusted.  There's no
 			//	point in continuing with the MovieStock.
 
-			if (movie.status == "Inactive") throw "This MovieStock is inactive and not available to delist";
-			if (invalidReleaseDate (movie)) throw "This film has not been in theaters and its MovieStock is not available to delist";
+			if (movie.status == "Inactive")
+				throw "This MovieStock is inactive and not available to delist";
+
 //	This is okay for now, but some day I may have enough money that holding StarBonds that won't adjust for six or even
 //	nine months makes sense.  Or I may reset my account and start from scratch.
+			if (invalidReleaseDate (movie))
+				throw "This film has not been in theaters and its MovieStock is not available to delist";
+
+			if (!movie.hasAttachedStarBonds())
+				throw "There are no StarBonds attached to this MovieStock"
+
+//	If a MovieStock is in theaters but reporting no box office, there is a very good chance that any attached StarBonds
+//	will be detached about a week before the film is delisted (there's a small chance the distributor is waiting to report
+//	any earnings all at once rather than on a daily or weekly basis).
 
 			//	Once the Promise is fulfilled and I have all of the available data for a given MovieStock, I want
 			//	to update the <div> created to represent that data.  At the very last, I want to get the title of the

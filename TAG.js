@@ -54,7 +54,7 @@ function fetchMovieStock (event)
 		alert (ticker + " is duplicated");
 	else
 	{
-		addNewMovieStockDiv(section, ticker);
+		const mDiv = addNewMovieStockDiv(section, ticker);
 
 		const movie = new MovieStock;
 		movie.fetch (ticker)
@@ -69,13 +69,18 @@ function fetchMovieStock (event)
 
 			if (movie.status == "Inactive") throw "This MovieStock is inactive and not available to delist";
 			if (invalidReleaseDate (movie)) throw "This film has not been in theaters and its MovieStock is not available to delist";
+//	This is okay for now, but some day I may have enough money that holding StarBonds that won't adjust for six or even
+//	nine months makes sense.  Or I may reset my account and start from scratch.
 
-			//	Once fetchMovieStock() has completed and I have all of the available data for a given MovieStock, I want
+			//	Once the Promise is fulfilled and I have all of the available data for a given MovieStock, I want
 			//	to update the <div> created to represent that data.  At the very last, I want to get the title of the
 			//	film on the screen (or an error message, should movie.fetch() return false.). 
 
 			if (noErrorsFound)
+			{
+				updateCurrentPrice (mDiv, movie.sharePrice);
 				updateFilmTitle (ticker, movie.title);
+			}
 			else
 			{
 				const div = document.getElementById (ticker);
@@ -125,6 +130,7 @@ function addNewMovieStockDiv (s, t)
 
 	const input = document.createElement ("input");
 	input.setAttribute ("disabled", true);
+	input.setAttribute ("id", "current-price");
 	input.title = "The total gross domestic box office when " + t + " is delisted";
 	div.append (input);
 
@@ -137,6 +143,8 @@ function addNewMovieStockDiv (s, t)
 	div.append (title);
 
 	insertSecurity (s, t, div);
+
+	return div;
 }
 
 function getMovieStockSection ()
@@ -167,6 +175,15 @@ function insertSecurity (parent, ticker, div)
 
 	if (!done)
 		parent.append (div);
+}
+
+function updateCurrentPrice (div, price)
+{
+	//	Update the indicated <div> with the share price extracted from HSX.
+
+	const input = div.querySelector ("#current-price");
+	input.value = price;
+	input.removeAttribute ("disabled");
 }
 
 function updateFilmTitle (ticker, text)

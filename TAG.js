@@ -125,7 +125,7 @@ function invalidReleaseDate (movie)
 function addNewMovieStockDiv (s, t)
 {
 	const div = document.createElement ("div");
-	div.classList.add ("moviestock");
+	div.classList.add ("security");
 	div.setAttribute ("id", t);
 
 	const input = document.createElement ("input");
@@ -135,10 +135,12 @@ function addNewMovieStockDiv (s, t)
 	div.append (input);
 
 	const ticker = document.createElement ("div");
+	ticker.classList.add ("ticker");
 	ticker.innerText = t;
 	div.append (ticker);
 
 	const title = document.createElement ("div");
+	title.classList.add ("grow");
 	title.setAttribute ("id", "title");
 	div.append (title);
 
@@ -229,6 +231,7 @@ function appendStarBonds (movie)
 	{
 		const div = document.createElement ("div");
 		div.classList.add ("starbond");
+		div.classList.add ("security");
 		div.innerText = s.name;
 		section.append (div);
 	} )

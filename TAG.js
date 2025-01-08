@@ -50,7 +50,8 @@ function fetchMovieStock (event)
 	}
 
 	const section = getMovieStockSection();
-	if (section.querySelector ("#" + ticker) != undefined)
+//		if (section.querySelector ("#" + ticker) != undefined)
+	if (section.querySelector ("#" + id (ticker)) != undefined)
 		alert (ticker + " is duplicated");
 	else
 	{
@@ -76,11 +77,10 @@ function fetchMovieStock (event)
 				throw "This film has not been in theaters and its MovieStock is not available to delist";
 
 			if (!movie.hasAttachedStarBonds())
-				throw "There are no StarBonds attached to this MovieStock"
+				throw "There are no StarBonds attached to this MovieStock";
 
-//	If a MovieStock is in theaters but reporting no box office, there is a very good chance that any attached StarBonds
-//	will be detached about a week before the film is delisted (there's a small chance the distributor is waiting to report
-//	any earnings all at once rather than on a daily or weekly basis).
+			if (movie.inTheaters() && (movie.domesticGross == undefined))
+					throw "This film is not reporting earnings.  StarBonds may be detached and not adjust";
 
 			//	Once the Promise is fulfilled and I have all of the available data for a given MovieStock, I want
 			//	to update the <div> created to represent that data.  At the very last, I want to get the title of the
@@ -89,13 +89,12 @@ function fetchMovieStock (event)
 			if (noErrorsFound)
 			{
 				updateCurrentPrice (mDiv, movie.sharePrice);
-				updateFilmTitle (ticker, movie.title);
+				updateFilmTitle (mDiv, movie.title);
 			}
 			else
 			{
-				const div = document.getElementById (ticker);
-				div.classList.add ("error");
-				updateFilmTitle (ticker, movie.error);
+				mDiv.classList.add ("error");
+				updateFilmTitle (mDiv, movie.error);
 			}
 
 			appendStarBonds (movie);
@@ -107,9 +106,8 @@ function fetchMovieStock (event)
 			//	conveyed as the title property of the element representing the MovieStock.  Perhaps the error text
 			//	should replace the MovieStock's title?
 			
-			const div = document.getElementById (ticker);
-			div.classList.add ("error");
-			updateFilmTitle (ticker, error);
+			mDiv.classList.add ("error");
+			updateFilmTitle (mDiv, error);
 
 			setTimeout ( _ => { removeMovieStock (section, div) }, 30000 );
 		} )
@@ -137,8 +135,7 @@ function addNewMovieStockDiv (s, t)
 	const div = document.createElement ("div");
 	div.classList.add ("moviestock");
 	div.classList.add ("security");
-	div.setAttribute ("id", t);
-
+	div.setAttribute ("id", id (t));
 	const input = document.createElement ("input");
 	input.setAttribute ("disabled", true);
 	input.setAttribute ("id", "current-price");
@@ -178,7 +175,7 @@ function insertSecurity (parent, ticker, div)
 	for (let i=0; i<collection.length; i++)
 	{
 		const item = collection.item(i);
-		if (item.getAttribute ("id") > ticker)
+		if (item.getAttribute ("id") > id (ticker))
 		{
 			parent.insertBefore (div, item);
 			done = true;
@@ -199,11 +196,10 @@ function updateCurrentPrice (div, price)
 	input.removeAttribute ("disabled");
 }
 
-function updateFilmTitle (ticker, text)
+function updateFilmTitle (mDiv, text)
 {
 	//	Update the div#title of the container identified with id = ticker.
 
-	const mDiv = document.getElementById (ticker);
 	mDiv.querySelector ("#title").innerText = text;
 }
 
@@ -263,4 +259,12 @@ function getSection (id)
 	}
 
 	return section;
+}
+
+function id (ticker)
+{
+	//	Some ticker symbols begin with a numreal (6TRP8, for example) which is not a valid CSS id.  Ruturn a
+	//	valid CSS id by concatenating an arbitrary string with the HSX ticker symbol.
+
+	return "t-" + ticker;
 }

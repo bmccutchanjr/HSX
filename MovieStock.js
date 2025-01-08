@@ -383,6 +383,8 @@ class MovieStock extends Fetch
 
 	get dateReleased () { return this._dateReleased; }
 
+	get domesticGross () { return this._domesticGross; }
+
 	get status () { return this._status; }
 
 	get title () { return this._title; }
@@ -410,6 +412,19 @@ class MovieStock extends Fetch
 		//	if a MovieStock has no attached StarBonds, no StarBonds will be adjusted when the MovieStock is delisted.
 
 		if (this._attachedStarBonds.length == 0) return false;
+		return true;
+	}
+
+	inTheaters ()
+	{
+		//	Return true or false depending on whether the film represented by this MovieStock is currently in theaters.
+		//
+		//	For purposes of this application, a film is in theaters is this._status != "Inactive", the MovieStock has a
+		//	release date and that date is earlier than today's date.
+
+		if (this._status == "Inactive") return false;
+		if (this._dateReleased == undefined) return false;
+		if (this._dateReleased > new Date ()) return false;
 		return true;
 	}
 }

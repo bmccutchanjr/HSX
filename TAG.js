@@ -125,6 +125,7 @@ function invalidReleaseDate (movie)
 function addNewMovieStockDiv (s, t)
 {
 	const div = document.createElement ("div");
+	div.classList.add ("moviestock");
 	div.classList.add ("security");
 	div.setAttribute ("id", t);
 

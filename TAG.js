@@ -109,7 +109,8 @@ function fetchMovieStock (event)
 			mDiv.classList.add ("error");
 			updateFilmTitle (mDiv, error);
 
-			setTimeout ( _ => { removeMovieStock (section, div) }, 30000 );
+//				setTimeout ( _ => { removeMovieStock (section, div) }, 30000 );
+			setTimeout ( _ => { removeMovieStock (section, mDiv) }, 30000 );
 		} )
 	}
 }
@@ -241,6 +242,13 @@ function appendStarBonds (movie)
 		div.classList.add ("security");
 		div.innerText = s.name;
 		section.append (div);
+
+		//	And fetch the StarBond
+
+		const bond = new StarBond ();
+		bond.fetch (s.ticker)
+		.then (data => { alert ("StarBond is fetched") } )
+		.catch (error => { alert (error) } );
 	} )
 }
 

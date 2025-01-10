@@ -13,6 +13,7 @@ class Fetch
 		this._sharesHeldShort = undefined;
 		this._sharesTraded = undefined;
 		this._status = undefined;
+		this._title = undefined;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,9 +48,8 @@ class Fetch
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//	Methods to extract data shared by MovieStocks and Starbonds (status, current price, shares traded, etc.)
-	//	
+	//	Methods to extract data shared by MovieStocks and Starbonds (status, current price, shares traded, etc.).
+	//
 
 	extractSharePrice (page)
 	{
@@ -107,6 +107,25 @@ class Fetch
 			return false;
 		else
 			return true; 
+	}
+
+	extractTitle (page, securityType)
+	{
+		//	A MovieStock's title and StarBond's name both appear for the first time in the source pages
+		//	<title> tag.  This is also the first place (maybe only place) where the type of security is referenced.
+		//
+		//	I need to verify this security is the type of security I'm expecting, since the data on a MovieStock page
+		//	is different the the data on a StarBond page.
+
+		page = this.substring (page, "<title>\n");
+		const temp = page.substring (0, page.indexOf ("</title"));
+		if (temp.indexOf (securityType) < 0)
+		{
+			throw "The selected security (" + this._tickerSymbol + ") is not a " + securityType;
+		}
+
+		this._title = temp.substring (0, temp.indexOf (" - " + securityType));
+		return this.substring (page, ("<!--                  Begin: Page Body                      -->"));
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

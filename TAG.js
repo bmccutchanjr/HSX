@@ -163,31 +163,6 @@ function getMovieStockSection ()
 	return getSection ("moviestock-section");
 }
 
-function insertSecurity (parent, ticker, div)
-{
-	//	Add the specified DOM element to the children of the specified parent container so the list of
-	//	children will appear in alphabetical order.  This is done by iterating the children of parent and comparing
-	//	ticker to the id attribute of each child element (each element added to parent has id attribure set to its
-	//	ticker).  insertBefore() is used to add the new elwment before the indicated element.
-
-	let done = false;
-
-	const collection = parent.children;
-	for (let i=0; i<collection.length; i++)
-	{
-		const item = collection.item(i);
-		if (item.getAttribute ("id") > id (ticker))
-		{
-			parent.insertBefore (div, item);
-			done = true;
-			break;
-		}
-	}
-
-	if (!done)
-		parent.append (div);
-}
-
 function updateCurrentPrice (div, price)
 {
 	//	Update the indicated <div> with the share price extracted from HSX.
@@ -208,48 +183,64 @@ function updateFilmTitle (mDiv, text)
 //	Fetch a StarBond
 //
 
-function getStarBondSection ()
-{
-	const main = document.getElementsByTagName ("main")[0];
-
-	let section = document.getElementById ("starbond-section");
-	if (section != undefined)
-		main.removeChild (section);
-
-	section = document.createElement ("section");
-	section.setAttribute ("id", "starbond-section");
-	main.append (section);
-
-	return section;
-}
-
-const bonds = [];
-
 function appendStarBonds (movie)
 {
 	let sBond = movie.getNextStarBond ();
 	while (sBond)
 	{
-		bonds.push (sBond);
+		if (!document.getElementById (id (sBond.ticker)))
+		{
+			//	If and only if there is no element in the DOM with an id equal to the StarBond's ticker symbol.  In
+			//	plain English, insure the StarBonds are not duplicated.
+
+			const div = createNewStarBond (sBond);
+			insertSecurity ("starbond-section", sBond.ticker, div);
+			fetchStarBond (sBond.ticker);
+		}
+
 		sBond = movie.getNextStarBond (sBond.ticker);
 	}
+}
 
-	const section = getStarBondSection();
-	bonds.forEach (s =>
-	{
-		const div = document.createElement ("div");
-		div.classList.add ("starbond");
-		div.classList.add ("security");
-		div.innerText = s.name;
-		section.append (div);
+function createNewStarBond (bond)
+{
+	//	Create a <div> element to display date for one of the many StarBonds that are eligible to adjust
 
-		//	And fetch the StarBond
+	const div = document.createElement ("div");
+	div.classList.add ("starbond");
+	div.classList.add ("security");
+	div.setAttribute ("id", id (bond.ticker));
 
-		const bond = new StarBond ();
-		bond.fetch (s.ticker)
-		.then (data => { alert ("StarBond is fetched") } )
-		.catch (error => { alert (error) } );
-	} )
+	const dROI = document.createElement ("input");
+	dROI.setAttribute ("disabled", true);
+	dROI.setAttribute ("id", "dROI");
+	div.append (dROI);
+
+	const tag = document.createElement ("input");
+	tag.setAttribute ("disabled", true);
+	tag.setAttribute ("id", "tag");
+	div.append (tag);
+
+	const ticker = document.createElement ("div");
+	ticker.innerText = bond.ticker;
+	div.append (ticker);
+
+	const name = document.createElement ("div");
+	name.classList.add ("grow");
+	name.innerText = bond.name;
+	div.append (name);
+
+	return div;
+}
+
+function fetchStarBond (ticker)
+{
+	//	Fetch the page from HSX.com that describes the specified StarBond
+
+	const bond = new StarBond ();
+	bond.fetch (ticker)
+	.then (data => { alert ("StarBond is fetched") } )
+	.catch (error => { alert (error) } );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -275,4 +266,32 @@ function id (ticker)
 	//	valid CSS id by concatenating an arbitrary string with the HSX ticker symbol.
 
 	return "t-" + ticker;
+}
+
+function insertSecurity (parent, ticker, div)
+{
+	if (typeof parent == "string")
+		parent = document.getElementById (parent);
+
+	//	Add the specified DOM element to the children of the specified parent container so the list of
+	//	children will appear in alphabetical order.  This is done by iterating the children of parent and comparing
+	//	ticker to the id attribute of each child element (each element added to parent has id attribure set to its
+	//	ticker).  insertBefore() is used to add the new elwment before the indicated element.
+
+	let done = false;
+
+	const collection = parent.children;
+	for (let i=0; i<collection.length; i++)
+	{
+		const item = collection.item(i);
+		if (item.getAttribute ("id") > id (ticker))
+		{
+			parent.insertBefore (div, item);
+			done = true;
+			break;
+		}
+	}
+
+	if (!done)
+		parent.append (div);
 }

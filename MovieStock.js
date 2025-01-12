@@ -36,35 +36,7 @@ class MovieStock extends Fetch
 			this.fetchPage ("security/view/" + ticker)
 			.then (page =>
 			{
-				//	This is where I scrape the data I want from the page.  When I'm done, simply resolve true or false,
-				//	so the invoking script can do its thing.
-				//
-				//	It should go without saying, but the data must be extracted in the order it's coded in the page.
-
-				page = this.extractTitle (page);
-				page = this.extractStatus (page);			//	a method of the parent (super) class
-				page = this.extractDateIPO (page);
-				page = this.extractGenre (page);
-				page = this.extractMPAARating (page);
-				page = this.extractPhase(page);
-				page = this.extractDateReleased (page);
-				page = this.extractReleasePattern (page);
-
-				if (this._dateReleased != undefined)
-				{
-					//	It should go without saying, but if a film hasn't been in a theater, it can't have
-					//	earned any money at the box office.  The source page may omit domestic gross and
-					//	theater count for the associated MovieStock.
-
-					page = this.extractDomesticGross (page);
-					page = this.extractTheaterCount (page);
-				}
-
-				page = this.extractAttachedStarBonds (page);
-				page = this.extractSharePrice (page);
-				page = this.extractSharesHeldLong (page);
-				page = this.extractSharesHeldShort (page);
-				page = this.extractSharesTraded (page);
+				this.extractData (page);
 
 				//	If I don't resolve something, the Promise that was returned will never be fulfilled.  The
 				//	invoking method or function will wait forever and nothing will be done with the data that's
@@ -80,6 +52,48 @@ class MovieStock extends Fetch
 		})
 	}
 
+	extractData (page)
+	{
+		//	Extract the data I want from the page.  Functions that actually scrape each piece of data return
+		//	the source page with the code for that data removed.   It should go without saying that the data must
+		//	be extracted in the order it's coded in the page.
+
+		page = this.extractTitle (page, "MovieStock");		//	The title of the movie
+		page = this.extractStatus (page);					//	a method of the parent (super) class
+		page = this.extractDateIPO (page);
+		page = this.extractGenre (page);
+		page = this.extractMPAARating (page);
+		page = this.extractPhase(page);
+		page = this.extractDateReleased (page);
+		page = this.extractReleasePattern (page);
+
+		if (this._dateReleased != undefined)
+		{
+			//	It should go without saying, but if a film hasn't been in a theater, it can't have
+			//	earned any money at the box office.  The source page may omit domestic gross and
+			//	theater count for the associated MovieStock.
+			//
+			//	It is actually not unusual for the page to include a theater count for films that have not yet
+			//	been in theaters.  If the distributor has set a release date, they know (or have a very idea) how
+			//	many theaters it will be in, especially as the release dat approaches.  They may or may not report
+			//	that number ahead of the release.  If the theater count is made public, HSX will include it on the
+			//	MovieStock page.
+			//
+			//	But I'm not using theater count for anything at this time, so leaving it like this doesn't hurt
+			//	anything.
+
+			page = this.extractDomesticGross (page);
+			page = this.extractTheaterCount (page);
+		}
+
+		page = this.extractAttachedStarBonds (page);
+		page = this.extractSharePrice (page);
+		page = this.extractSharesHeldLong (page);
+		page = this.extractSharesHeldShort (page);
+		page = this.extractSharesTraded (page);
+
+//			return page;
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	Functions to extract specific bits of data from the page.  These functions are in alphabetical order, to make

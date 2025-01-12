@@ -50,7 +50,6 @@ class StarBond extends Fetch
 
 	extractData (page)
 	{
-
 		page = this.extractTitle (page, "StarBond");		//	The actor's name
 		page = this.extractStatus (page);
 		page = this.extractDateIPO (page);

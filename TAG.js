@@ -245,7 +245,7 @@ function fetchStarBond (ticker)
 //	1)	StarBond has only one attached MovieStock that is delisting.  StarBonds with a single MovieStock are not
 //		adjusted
 
-//	If there are noerrors, calculate the new trailing average gross
+//	If there are no errors, calculate the new trailing average gross
 
 alert ("StarBond is fetched");
 const p = document.createElement ("div");

@@ -51,39 +51,15 @@ class StarBond extends Fetch
 	extractData (page)
 	{
 
-//	alert ("extractData")
-//	alert ("title");
 		page = this.extractTitle (page, "StarBond");		//	The actor's name
-//	alert (this._title);
-//	alert ("status");
 		page = this.extractStatus (page);
-//	alert (this._status);
-//	alert ("date IPO");
 		page = this.extractDateIPO (page);
-//	alert (this._dateIPO);
-//	alert ("TAG");
 		page = this.extractTAG (page);
-//	alert (this._trailingAverage);
-
-//	attached MovieStocks
 		page = this.extractMovieStocks (page);
-//	current price
-//	shares held long
-//	shares held short
-//	shares traded
-//	return page;
-//	alert ("share price");
 		page = this.extractSharePrice (page);
-//	alert (this._sharePrice);
-//	alert ("shares long");
 		page = this.extractSharesHeldLong (page);
-//	alert (this._sharesHeldLong);
-//	alert ("shares short");
 		page = this.extractSharesHeldShort (page);
-//	alert (this._sharesHeldShort);
-//	alert ("shares traded");
 		page = this.extractSharesTraded (page);
-//	alert (this._sharesTraded);
 
 		return page;
 	}

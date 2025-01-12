@@ -9,6 +9,8 @@ class StarBond extends Fetch
 
 		//	All properties default to undefined
 
+		this._attachedMovieStocks = [];
+		this._trailingAverage = undefined;
 	}
 
 	fetch (ticker)
@@ -18,9 +20,9 @@ class StarBond extends Fetch
 		//	page being fetched.  StarBonds do not have the same data as MovieStocks.  And list of securities
 		//	are different than either.
 		//
-		//	I intended to pass this function to fatch() as a callback and execute it from fetch().  Seemed the
-		//	cleanest and most JavaScripty thing to do.  But the callback causes the object referenced bu 'this',
-		//	it no longer points to the StarBond object and this.extractData() is undefined.
+		//	I intended to pass a callback to fatch() to perform after the page had been fetched..  Seemed the
+		//	cleanest and most JavaScripty thing to do.  But the callback causes the object referenced by 'this',
+		//	it no longer points to the class object and this.extractData() is undefined.
 		//
 		//	So I either duplicate the method fetch() in each class or I need to separate fetch() and extractData()
 		//	and invoke them separately.  fetch() could be the same no matter what class invokes it, as such it
@@ -39,9 +41,6 @@ class StarBond extends Fetch
 			this.fetchPage ("security/view/" + ticker)
 			.then (page =>
 			{
-				if (page.indexOf ("The security you requested does not currently exist on the Exchange") > -1)
-					throw ("This security is not currently listed on the exchange")
-
 				page = this.extractData (page)
 				resolve (page);
 			} )
@@ -52,11 +51,99 @@ class StarBond extends Fetch
 	extractData (page)
 	{
 
-alert ("extractData")
-alert ("title");
+//	alert ("extractData")
+//	alert ("title");
 		page = this.extractTitle (page, "StarBond");		//	The actor's name
-alert (this._title);
+//	alert (this._title);
+//	alert ("status");
+		page = this.extractStatus (page);
+//	alert (this._status);
+//	alert ("date IPO");
+		page = this.extractDateIPO (page);
+//	alert (this._dateIPO);
+//	alert ("TAG");
+		page = this.extractTAG (page);
+//	alert (this._trailingAverage);
+
+//	attached MovieStocks
+		page = this.extractMovieStocks (page);
+//	current price
+//	shares held long
+//	shares held short
+//	shares traded
+//	return page;
+//	alert ("share price");
+		page = this.extractSharePrice (page);
+//	alert (this._sharePrice);
+//	alert ("shares long");
+		page = this.extractSharesHeldLong (page);
+//	alert (this._sharesHeldLong);
+//	alert ("shares short");
+		page = this.extractSharesHeldShort (page);
+//	alert (this._sharesHeldShort);
+//	alert ("shares traded");
+		page = this.extractSharesTraded (page);
+//	alert (this._sharesTraded);
 
 		return page;
+	}
+
+	extractMovieStocks (page)
+	{
+		page = this.substring (page, "<h4>Filmography</h4>");
+		const limitText = "<!-- RELATED POSTS -->";
+		let movies = page.substring (0, page.indexOf (limitText));
+
+		while (movies.indexOf ("<p>") != -1)
+		{
+			movies = this.extractNextMovieStock (movies);
+		}
+
+		return this.substring (page, limitText);
+	}
+	
+	extractNextMovieStock (source)
+	{
+		//	Attached StarBonds are those StarBonds representing actors and/or directors that are involved with a film.
+		//	These StarBonds are displayed in a table near the end of the MovieStock and are extracted from the source
+		//	one at a time.
+
+		const obj = {};
+
+		const target = "<p><strong>";
+		if (source.indexOf (target) == -1)
+			obj.dateReleased = undefined;
+		else
+		{
+			source = this.substring (source, target);
+			obj.dateReleased = new Date (source.substring (0, source.indexOf ("/strong")).trim());
+		}
+
+		source = this.substring (source, "security/view/");
+		obj.ticker = source.substring (0, source.indexOf ("\">")).trim();
+
+		source = this.substring (source, "\">");
+		obj.title = source.substring (0, source.indexOf ("</a>")).trim();
+
+		this._attachedMovieStocks.push (obj);
+
+		return source;
+	}
+
+	extractTAG (page)
+	{
+		try
+		{
+			page = this.substring (page, "<td class=\"label\">TAG:</td><td>");
+			const temp = page.substring (0, page.indexOf ("</td>"));
+			if ((temp != "") && (temp != "n/a"))
+					this._trailingAverage = this.convertToNumber (temp);
+
+			return page;
+		}
+		catch (error)
+		{
+			throw "Invalid input (TAG): " + page.substring (0, page.indexOf ("</td>"));
+		}
 	}
 }

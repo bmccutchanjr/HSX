@@ -8,6 +8,8 @@ class Fetch
 	{
 		//	Initialize those properties that are common to MovieStocks and StarBonds.  
 
+		this._dateDelisted = undefined;
+		this._dateIPO = undefined;
 		this._sharePrice = undefined;
 		this._sharesHeldLong = undefined;
 		this._sharesHeldShort = undefined;
@@ -42,14 +44,89 @@ class Fetch
 		{
 			fetch ("https://www.hsx.com/" + what)
 			.then (response => { return response.text() } )
+			.then (data =>
+			{
+				this.testNotListed (data);
+				resolve (data);
+			} )
 			.then (data => { resolve (data) } )
 			.catch (error => { reject (error) } )
 		} )
 	}
 
+	testNotListed (page)
+	{
+		if (page.indexOf ("The security you requested does not currently exist on the Exchange") > -1)
+			throw ("This security is not currently listed on the exchange")
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	Methods to extract data shared by MovieStocks and Starbonds (status, current price, shares traded, etc.).
 	//
+
+	extractDateDelisted (page)
+	{
+		//	The date of the Initial Public Offering (IPO) for this MovieStock.  A MovieStock must always have a valid
+		//	date of IPO.
+
+		try
+		{
+			//	HSX is inconsistent in how this label is coded.  MovieStock pages code a non-breaking space (&nbsp;) but
+			//	StarBonds simply uses an ASCII space character.
+
+			let target = "<td class=\"label\">Delist&nbsp;Date:</td><td>";
+			if (page.indexOf (target) == -1)
+				target = "<td class=\"label\">Delist Date:</td><td>";
+
+			page = this.substring (page, target);
+			this._dateDelisted = new Date (page.substring (0, page.indexOf ("</td>")));
+
+			return page;
+		}
+		catch (error)
+		{
+			//	I think the page should always have a date of IPO or date the MovieStock was delisted at this point in the
+			//	page source.  I'm not at all sure that either is actually relevant to anything I want to do, so untimately,
+			//	this may not be a fatal error condition.  I may be able to ignore it.  But for now...
+
+			throw error + ": delist date";
+		}
+	}
+
+	extractDateIPO (page)
+	{
+		//	The date of the Initial Public Offering (IPO) for this MovieStock.  A MovieStock's page should always have a
+		//	valid date of IPO or a valid date of delist.
+
+		try
+		{
+			//	HSX is inconsistent in how this label is coded.  MovieStock pages code a non-breaking space (&nbsp;) but
+			//	StarBonds simply uses an ASCII space character.
+
+			let target = "<td class=\"label\">IPO&nbsp;Date:</td><td>";
+			if (page.indexOf (target) == -1)
+				target = "<td class=\"label\">IPO Date:</td><td>";
+
+			page = this.substring (page, target);
+			this._dateIPO = new Date (page.substring (0, page.indexOf ("</td>")));
+		}
+		catch (error)
+		{
+			if ((error == "Target string not found within source page") && (this._status == "Inactive"))
+			{
+				//	I'm not sure, but it seems that the date of IPO or date of delist should appear at this point in
+				//	the source page.  So, if the date of IPO was not found AND the film's status in "Inactive", look
+				//	for the date that the film was delisted instead.
+
+				this._dateIPO = undefined;
+				page = this.extractDateDelisted (page);
+			}
+			else
+				throw error + ": date of IPO";
+		}
+
+		return page;
+	}
 
 	extractSharePrice (page)
 	{

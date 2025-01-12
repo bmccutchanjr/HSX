@@ -10,7 +10,7 @@ class MovieStock extends Fetch
 		//	Everything defaults to undefined...
 
 		this._attachedStarBonds = [];
-		this._dateDateDelisted = undefined;
+		this._dateDelisted = undefined;
 		this._dateIPO = undefined;
 		this._dateReleased = undefined;
 		this._domesticGross = undefined;
@@ -36,50 +36,45 @@ class MovieStock extends Fetch
 			this.fetchPage ("security/view/" + ticker)
 			.then (page =>
 			{
-				if (page.indexOf ("The security you requested does not currently exist on the Exchange") > -1)
-					reject (ticker + " is not currently listed on the exchange")
-				else
+				//	This is where I scrape the data I want from the page.  When I'm done, simply resolve true or false,
+				//	so the invoking script can do its thing.
+				//
+				//	It should go without saying, but the data must be extracted in the order it's coded in the page.
+
+				page = this.extractTitle (page);
+				page = this.extractStatus (page);			//	a method of the parent (super) class
+				page = this.extractDateIPO (page);
+				page = this.extractGenre (page);
+				page = this.extractMPAARating (page);
+				page = this.extractPhase(page);
+				page = this.extractDateReleased (page);
+				page = this.extractReleasePattern (page);
+
+				if (this._dateReleased != undefined)
 				{
-					//	This is where I scrape the data I want from the page.  When I'm done, simply resolve true or false,
-					//	so the invoking script can do its thing.
-					//
-					//	It should go without saying, but the data must be extracted in the order it's coded in the page.
+					//	It should go without saying, but if a film hasn't been in a theater, it can't have
+					//	earned any money at the box office.  The source page may omit domestic gross and
+					//	theater count for the associated MovieStock.
 
-					page = this.extractTitle (page);
-					page = this.extractStatus (page);			//	a method of the parent (super) class
-					page = this.extractDateIPO (page);
-					page = this.extractGenre (page);
-					page = this.extractMPAARating (page);
-					page = this.extractPhase(page);
-					page = this.extractDateReleased (page);
-					page = this.extractReleasePattern (page);
-
-					if (this._dateReleased != undefined)
-					{
-						//	It should go without saying, but if a film hasn't been in a theater, it can't have
-						//	earned any money at the box office.  The source page may omit domestic gross and
-						//	theater count for the associated MovieStock.
-
-						page = this.extractDomesticGross (page);
-						page = this.extractTheaterCount (page);
-					}
-
-					page = this.extractAttachedStarBonds (page);
-					page = this.extractSharePrice (page);
-					page = this.extractSharesHeldLong (page);
-					page = this.extractSharesHeldShort (page);
-					page = this.extractSharesTraded (page);
-
-					//	If I don't resolve something, the Promise that was returned will never be fulfilled.  The
-					//	invoking method or function will wait forever and nothing will be done with the data that's
-					//	been collected.
-					//
-					//	There are several properties, and no one function will need them all.  Seems better to resolve
-					//	true or false (I don't resolve false at this time) to fulfill the Promise and let the invoking
-					//	function know if an error occured.
-
-					resolve (true);
+					page = this.extractDomesticGross (page);
+					page = this.extractTheaterCount (page);
 				}
+
+				page = this.extractAttachedStarBonds (page);
+				page = this.extractSharePrice (page);
+				page = this.extractSharesHeldLong (page);
+				page = this.extractSharesHeldShort (page);
+				page = this.extractSharesTraded (page);
+
+				//	If I don't resolve something, the Promise that was returned will never be fulfilled.  The
+				//	invoking method or function will wait forever and nothing will be done with the data that's
+				//	been collected.
+				//
+				//	There are several properties, and no one function will need them all.  Seems better to resolve
+				//	true or false (I don't resolve false at this time) to fulfill the Promise and let the invoking
+				//	function know if a non-fatal error occured.
+
+				resolve (true);
 			} )
 			.catch (error => { reject (error) } )			
 		})
@@ -145,7 +140,7 @@ class MovieStock extends Fetch
 		try
 		{
 				page = this.substring (page, "<td class=\"label\">Delist&nbsp;Date:</td><td>");
-				this._dateDateDelisted = new Date (page.substring (0, page.indexOf ("</td>")));
+				this._dateDelisted = new Date (page.substring (0, page.indexOf ("</td>")));
 
 				return page;
 		}
@@ -219,8 +214,6 @@ class MovieStock extends Fetch
 		//	HSX's operation, and I can trust them to have the correct data here.
 		//
 		//	Attempting to convert non-numeric data will throw an error.  I simply need to catch that error.
-
-//			this._domesticGross = undefined;		//	let domestic gross defaults to undefined
 
 		try
 		{

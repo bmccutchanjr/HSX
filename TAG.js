@@ -239,7 +239,19 @@ function fetchStarBond (ticker)
 
 	const bond = new StarBond ();
 	bond.fetch (ticker)
-	.then (data => { alert ("StarBond is fetched") } )
+	.then (page =>
+	{
+//	Errors that can occur here...
+//	1)	StarBond has only one attached MovieStock that is delisting.  StarBonds with a single MovieStock are not
+//		adjusted
+
+//	If there are noerrors, calculate the new trailing average gross
+
+alert ("StarBond is fetched");
+const p = document.createElement ("div");
+p.innerText = page;
+document.getElementsByTagName ("main")[0].append (p);
+} )
 	.catch (error => { alert (error) } );
 }
 
